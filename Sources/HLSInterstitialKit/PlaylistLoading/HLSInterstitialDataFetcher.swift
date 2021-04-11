@@ -12,9 +12,7 @@ class HLSInterstitialDataFetcher {
         self.urlSession = urlSession
     }
     
-    func loadData(forURL url: URL, completion: @escaping (Result<SuccessfulResponse, HLSInterstitialError>) -> Void) {
-        var request = URLRequest(url: url)
-        request.networkServiceType = .avStreaming
+    func loadData(forRequest request: URLRequest, url: URL, completion: @escaping (Result<SuccessfulResponse, HLSInterstitialError>) -> Void) {
         urlSession.dataTask(with: request) { data, response, error in
             let statusCode = (response as? HTTPURLResponse)?.statusCode
             if let error = error {

@@ -13,9 +13,11 @@ class HLSInterstitialPlaylistLoader {
         self.hlsParser = hlsParser
     }
 
-    func loadPlaylist(forInterstitialURL interstitialURL: URL, completion: @escaping (Result<Data, HLSInterstitialError>) -> Void) {
+    func loadPlaylist(forRequest request: URLRequest, interstitialURL: URL, completion: @escaping (Result<Data, HLSInterstitialError>) -> Void) {
+        var updatedRequest = request
         let url = interstitialURL.fromInterstitialURL()
-        dataFetcher.loadData(forURL: url) { [weak self] result in
+        updatedRequest.url = url
+        dataFetcher.loadData(forRequest: updatedRequest, url: url) { [weak self] result in
             let playlistData: Data
             switch result {
             case .failure(let error):
