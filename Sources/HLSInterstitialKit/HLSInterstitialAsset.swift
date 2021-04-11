@@ -9,6 +9,8 @@ public final class HLSInterstitialAsset: AVURLAsset {
     )
     private let resourceLoaderDelegate: HLSInterstitialAssetResourceLoaderDelegate
     
+    private(set) var initialEvents = [HLSInterstitialInitialEvent]()
+    
     public override init(url: URL, options: [String: Any]? = nil) {
         self.originalURL = url
         self.resourceLoaderDelegate = HLSInterstitialAssetResourceLoaderDelegate()
@@ -21,6 +23,11 @@ public final class HLSInterstitialAsset: AVURLAsset {
             options: .new,
             context: nil
         )
+    }
+    
+    public convenience init(url: URL, options: [String : Any]? = nil, initialEvents: [HLSInterstitialInitialEvent]) {
+        self.init(url: url, options: options)
+        self.initialEvents = initialEvents
     }
     
     override public func observeValue(
