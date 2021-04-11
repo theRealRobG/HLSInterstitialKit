@@ -20,7 +20,8 @@ public enum NetworkError: Error {
             let statusCodeText = details.statusCode.map { "(HTTP Status: \($0))" } ?? "(HTTP Status: Unknown)"
             return "Request (URL: \(details.requestURL.absoluteString)) failed \(statusCodeText) with error: \(details.error.localizedDescription)"
         case .unexpectedEmptyResponse(let details):
-            return "Unexpected empty response (URL: \(details.requestURL.absoluteString))"
+            let statusCodeText = details.responseStatusCode.map { "(HTTP Status: \($0))" } ?? "(HTTP Status: Unknown)"
+            return "Unexpected empty response \(statusCodeText) (URL: \(details.requestURL.absoluteString))"
         }
     }
     
@@ -36,9 +37,13 @@ public enum NetworkError: Error {
             }
             return info
         case .unexpectedEmptyResponse(let details):
-            return [
+            var info: [String: Any] = [
                 Self.RequestURLUserInfoKey: details.requestURL
             ]
+            if let statusCode = details.responseStatusCode {
+                info[Self.StatusCodeUserInfoKey] = statusCode
+            }
+            return info
         }
     }
 }

@@ -24,7 +24,7 @@ class HLSInterstitialPlaylistLoader {
                 return completion(.failure(error))
             case .success(let response):
                 guard let data = response.data else {
-                    let errorDetails = UnexpectedEmptyResponseErrorDetails(requestURL: url)
+                    let errorDetails = UnexpectedEmptyResponseErrorDetails(requestURL: url, responseStatusCode: response.statusCode)
                     return completion(.failure(.networkError(.unexpectedEmptyResponse(errorDetails))))
                 }
                 playlistData = data
