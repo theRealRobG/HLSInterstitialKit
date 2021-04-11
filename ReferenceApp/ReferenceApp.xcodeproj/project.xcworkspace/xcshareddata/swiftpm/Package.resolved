@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "mamba",
+        "repositoryURL": "https://github.com/comcast/mamba.git",
+        "state": {
+          "branch": null,
+          "revision": "4d2ebb7f38ef1869b926e68f9baca02d5da659ae",
+          "version": "1.5.1"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
