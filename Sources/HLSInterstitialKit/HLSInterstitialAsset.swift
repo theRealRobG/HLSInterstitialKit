@@ -5,7 +5,7 @@ public final class HLSInterstitialAsset: AVURLAsset {
     private let originalURL: URL
     private let defaultResourceLoaderDelegateQueue = DispatchQueue(
         label: "com.csaikit.csaiasset.default-resource-loader-delegate-queue",
-        qos: .userInitiated
+        qos: .userInteractive
     )
     private let resourceLoaderDelegate: HLSInterstitialAssetResourceLoaderDelegate
     
