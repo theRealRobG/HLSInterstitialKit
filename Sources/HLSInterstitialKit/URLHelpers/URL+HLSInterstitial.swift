@@ -10,7 +10,7 @@ extension URL {
     /// Helper method that defaults to no-op if not a `CSAIScheme` type of `URL`.
     func fromInterstitialURL() -> URL {
         guard let scheme = scheme, let interstitialScheme = HLSInterstitialScheme(rawValue: scheme) else { return self }
-        guard var urlComponents = URLComponents(url: self, resolvingAgainstBaseURL: false) else { return self }
+        guard var urlComponents = URLComponents(url: self, resolvingAgainstBaseURL: true) else { return self }
         urlComponents.scheme = HTTPScheme(hlsInterstitialScheme: interstitialScheme).rawValue
         return urlComponents.url ?? self
     }
@@ -18,7 +18,7 @@ extension URL {
     /// Helper method that defaults to no-op if not a `HTTPScheme` type of `URL`.
     func toInterstitialURL() -> URL {
         guard let scheme = scheme, let httpScheme = HTTPScheme(rawValue: scheme) else { return self }
-        guard var urlComponents = URLComponents(url: self, resolvingAgainstBaseURL: false) else { return self }
+        guard var urlComponents = URLComponents(url: self, resolvingAgainstBaseURL: true) else { return self }
         urlComponents.scheme = HLSInterstitialScheme(httpScheme: httpScheme).rawValue
         return urlComponents.url ?? self
     }
