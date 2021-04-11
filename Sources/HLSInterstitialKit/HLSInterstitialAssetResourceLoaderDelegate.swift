@@ -5,6 +5,7 @@ class HLSInterstitialAssetResourceLoaderDelegate: NSObject, AVAssetResourceLoade
     weak var clientSetResourceLoaderDelegate: AVAssetResourceLoaderDelegate?
     
     let playlistLoader: HLSInterstitialPlaylistLoader
+    var initialEvents = [HLSInterstitialInitialEvent]()
 
     init(playlistLoader: HLSInterstitialPlaylistLoader = HLSInterstitialPlaylistLoader()) {
         self.playlistLoader = playlistLoader
@@ -25,7 +26,11 @@ class HLSInterstitialAssetResourceLoaderDelegate: NSObject, AVAssetResourceLoade
         shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest
     ) -> Bool {
         if let url = loadingRequest.request.url, url.isInterstitialURL() {
-            playlistLoader.loadPlaylist(forRequest: loadingRequest.request, interstitialURL: url) { result in
+            playlistLoader.loadPlaylist(
+                forRequest: loadingRequest.request,
+                interstitialURL: url,
+                initialInterstitials: initialEvents
+            ) { result in
                 switch result {
                 case .success(let playlistData):
                     loadingRequest.dataRequest?.respond(with: playlistData)
