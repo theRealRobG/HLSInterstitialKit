@@ -1,3 +1,4 @@
+/// - Tag: HLSInterstitialRestrictions
 public struct HLSInterstitialRestrictions: OptionSet {
     /// Indicates that while the interstitial is being played, the client should not allow the user to jump forward from the current
     /// playhead position or set the rate to greater than the regular playback rate until playback reaches the end of the interstitial.
