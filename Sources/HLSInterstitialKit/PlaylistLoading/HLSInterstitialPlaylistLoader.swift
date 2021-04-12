@@ -2,8 +2,9 @@ import Foundation
 import mamba
 
 class HLSInterstitialPlaylistLoader {
-    let dataFetcher: HLSInterstitialDataFetcher
-    let hlsParser: HLSParser
+    private let dataFetcher: HLSInterstitialDataFetcher
+    private let hlsParser: HLSParser
+    private var masterPlaylist: MasterPlaylist?
 
     init(
         dataFetcher: HLSInterstitialDataFetcher = HLSInterstitialDataFetcher(),
@@ -34,11 +35,21 @@ class HLSInterstitialPlaylistLoader {
                 }
                 playlistData = data
             }
-            self?.manipulate(playlistData: playlistData, url: url, completion: completion)
+            self?.manipulate(
+                playlistData: playlistData,
+                url: url,
+                initialInterstitials: initialInterstitials,
+                completion: completion
+            )
         }
     }
 
-    func manipulate(playlistData originalPlaylistData: Data, url: URL, completion: @escaping (Result<Data, HLSInterstitialError>) -> Void) {
+    func manipulate(
+        playlistData originalPlaylistData: Data,
+        url: URL,
+        initialInterstitials: [HLSInterstitialInitialEvent],
+        completion: @escaping (Result<Data, HLSInterstitialError>) -> Void
+    ) {
         do {
             var playlist = try hlsParser.parse(playlistData: originalPlaylistData, url: url)
 
@@ -47,17 +58,24 @@ class HLSInterstitialPlaylistLoader {
                 completion(.success(originalPlaylistData))
 
             case .master:
-                playlist.convertURLsToInterstitialScheme()
-                let playlistData = try playlist.write()
+                let masterPlaylist = MasterPlaylist(&playlist, initialInterstitials: initialInterstitials)
+                self.masterPlaylist = masterPlaylist
+                let playlistData = try masterPlaylist.writeMaster()
                 completion(.success(playlistData))
 
             case .media:
-                playlist.convertURLsFromInterstitialScheme()
-                let playlistData = try playlist.write()
-                completion(.success(playlistData))
+                guard let masterPlaylist = masterPlaylist else {
+                    throw HLSInterstitialError.mediaLoadedWithoutMasterError(
+                        MediaLoadedWithoutMasterError(playlistURL: playlist.url)
+                    )
+                }
+                masterPlaylist.updateMedia(playlist: &playlist, completion: completion)
             }
         } catch {
-            completion(.failure(.playlistParseError(PlaylistParseError(error))))
+            guard let interstitialError = error as? HLSInterstitialError else {
+                return completion(.failure(.playlistParseError(PlaylistParseError(error))))
+            }
+            completion(.failure(interstitialError))
         }
     }
 }

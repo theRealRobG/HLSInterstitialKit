@@ -3,15 +3,17 @@ import Foundation
 public enum HLSInterstitialError: LocalizedError, CustomNSError {
     case networkError(NetworkError)
     case playlistParseError(PlaylistParseError)
+    case mediaLoadedWithoutMasterError(MediaLoadedWithoutMasterError)
     
     public static let errorDomain = "HLSInterstitialError"
-    public static let NetworkErrorRequestURLUserInfoKey = NetworkError.RequestURLUserInfoKey
-    public static let NetworkErrorStatusCodeUserInfoKey = NetworkError.StatusCodeUserInfoKey
+    public static let RequestURLUserInfoKey = "HLSInterstitialError.RequestURLUserInfoKey"
+    public static let NetworkErrorStatusCodeUserInfoKey = "HLSInterstitialError.NetworkErrorStatusCodeUserInfoKey"
     
     public var errorCode: Int {
         switch self {
         case .networkError(let error): return error.code.rawValue
         case .playlistParseError(let error): return error.code.rawValue
+        case .mediaLoadedWithoutMasterError(let error): return error.code.rawValue
         }
     }
     
@@ -19,6 +21,7 @@ public enum HLSInterstitialError: LocalizedError, CustomNSError {
         switch self {
         case .networkError(let error): return error.userInfo
         case .playlistParseError(let error): return error.userInfo
+        case .mediaLoadedWithoutMasterError(let error): return error.userInfo
         }
     }
     
@@ -26,6 +29,7 @@ public enum HLSInterstitialError: LocalizedError, CustomNSError {
         switch self {
         case .networkError(let error): return error.description
         case .playlistParseError(let error): return error.description
+        case .mediaLoadedWithoutMasterError(let error): return error.description
         }
     }
 }
@@ -37,5 +41,7 @@ public extension HLSInterstitialError {
         case networkUnexpectedEmptyResponse = 101
         // Playlist parse errors
         case playlistParseParserError = 200
+        // Media load errors
+        case mediaLoadedWithoutMasterError = 300
     }
 }

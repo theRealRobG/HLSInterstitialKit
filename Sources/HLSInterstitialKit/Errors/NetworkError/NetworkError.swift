@@ -1,9 +1,6 @@
 import Foundation
 
 public enum NetworkError: Error {
-    public static let RequestURLUserInfoKey = "NetworkErrorRequestURLUserInfoKey"
-    public static let StatusCodeUserInfoKey = "NetworkErrorStatusCodeUserInfoKey"
-    
     case requestError(RequestErrorDetails)
     case unexpectedEmptyResponse(UnexpectedEmptyResponseErrorDetails)
     
@@ -30,18 +27,18 @@ public enum NetworkError: Error {
         case .requestError(let details):
             var info: [String: Any] = [
                 NSUnderlyingErrorKey: details.error,
-                Self.RequestURLUserInfoKey: details.requestURL
+                HLSInterstitialError.RequestURLUserInfoKey: details.requestURL
             ]
             if let statusCode = details.statusCode {
-                info[Self.StatusCodeUserInfoKey] = statusCode
+                info[HLSInterstitialError.NetworkErrorStatusCodeUserInfoKey] = statusCode
             }
             return info
         case .unexpectedEmptyResponse(let details):
             var info: [String: Any] = [
-                Self.RequestURLUserInfoKey: details.requestURL
+                HLSInterstitialError.RequestURLUserInfoKey: details.requestURL
             ]
             if let statusCode = details.responseStatusCode {
-                info[Self.StatusCodeUserInfoKey] = statusCode
+                info[HLSInterstitialError.NetworkErrorStatusCodeUserInfoKey] = statusCode
             }
             return info
         }
