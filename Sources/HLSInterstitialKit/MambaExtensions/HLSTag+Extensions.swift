@@ -7,6 +7,14 @@ extension HLSTag {
         case toInterstitialURL
     }
     
+    func value(_ pantosValue: PantosValue) -> String? {
+        value(forValueIdentifier: pantosValue)
+    }
+    
+    func value<T: FailableStringLiteralConvertible>(_ pantosValue: PantosValue) -> T? {
+        value(forValueIdentifier: pantosValue)
+    }
+    
     /// Returns the TYPE attribute for EXT-X-MEDIA tags
     func getMediaType() -> HLSMediaType.Media? {
         guard let type = value(forValueIdentifier: PantosValue.type) else { return nil }
