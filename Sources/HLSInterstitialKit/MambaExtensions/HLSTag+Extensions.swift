@@ -1,6 +1,20 @@
 import Foundation
 import mamba
 
+extension Array where Element == HLSTag {
+    func first(_ pantosTag: PantosTag) -> HLSTag? {
+        first { $0.tagDescriptor == pantosTag }
+    }
+    
+    func firstIndex(_ pantosTag: PantosTag) -> Int? {
+        firstIndex(where: { $0.tagDescriptor == pantosTag })
+    }
+    
+    func contains(_ pantosTag: PantosTag) -> Bool {
+        contains(where: { $0.tagDescriptor == pantosTag })
+    }
+}
+
 extension HLSTag {
     private enum URLConversionDirection {
         case fromInterstitialURL

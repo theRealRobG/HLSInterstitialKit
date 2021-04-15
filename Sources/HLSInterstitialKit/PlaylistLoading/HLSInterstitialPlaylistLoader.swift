@@ -4,14 +4,16 @@ import mamba
 class HLSInterstitialPlaylistLoader {
     private let dataFetcher: HLSInterstitialDataFetcher
     private let hlsParser: HLSParser
-    private var masterPlaylist: MasterPlaylist?
+    private let mediaPlaylistManipulator: MediaPlaylistManipulator
 
     init(
         dataFetcher: HLSInterstitialDataFetcher = HLSInterstitialDataFetcher(),
-        hlsParser: HLSParser = HLSParser()
+        hlsParser: HLSParser = HLSParser(),
+        mediaPlaylistManipulator: MediaPlaylistManipulator = MediaPlaylistManipulator()
     ) {
         self.dataFetcher = dataFetcher
         self.hlsParser = hlsParser
+        self.mediaPlaylistManipulator = mediaPlaylistManipulator
     }
 
     func loadPlaylist(
@@ -58,18 +60,16 @@ class HLSInterstitialPlaylistLoader {
                 completion(.success(originalPlaylistData))
 
             case .master:
-                let masterPlaylist = MasterPlaylist(&playlist, initialInterstitials: initialInterstitials)
-                self.masterPlaylist = masterPlaylist
-                let playlistData = try masterPlaylist.writeMaster()
+                playlist.convertURLsToInterstitialScheme()
+                let playlistData = try playlist.write()
                 completion(.success(playlistData))
 
             case .media:
-                guard let masterPlaylist = masterPlaylist else {
-                    throw HLSInterstitialError.mediaLoadedWithoutMasterError(
-                        MediaLoadedWithoutMasterError(playlistURL: playlist.url)
-                    )
-                }
-                masterPlaylist.updateMedia(playlist: &playlist, completion: completion)
+                mediaPlaylistManipulator.manipulate(
+                    playlist: &playlist,
+                    initialInterstitials: initialInterstitials,
+                    completion: completion
+                )
             }
         } catch {
             guard let interstitialError = error as? HLSInterstitialError else {
