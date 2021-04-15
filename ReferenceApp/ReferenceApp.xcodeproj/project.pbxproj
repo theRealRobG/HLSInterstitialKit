@@ -17,6 +17,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E8575EFF2627CFF200ABAAA5 /* ReferenceApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ReferenceApp.entitlements; sourceTree = "<group>"; };
 		E8E302F526227AEA00CF6049 /* ReferenceApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReferenceApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E8E302F826227AEA00CF6049 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E8E302FA26227AEA00CF6049 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -61,6 +62,7 @@
 		E8E302F726227AEA00CF6049 /* ReferenceApp */ = {
 			isa = PBXGroup;
 			children = (
+				E8575EFF2627CFF200ABAAA5 /* ReferenceApp.entitlements */,
 				E8E302F826227AEA00CF6049 /* AppDelegate.swift */,
 				E8E302FA26227AEA00CF6049 /* SceneDelegate.swift */,
 				E8E302FC26227AEA00CF6049 /* ViewController.swift */,
@@ -301,14 +303,18 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = ReferenceApp/ReferenceApp.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = 6QHSVMF5PW;
 				INFOPLIST_FILE = ReferenceApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.cvt.test.ReferenceApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cvt.test.interstitials;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "CoreVideoTeam Test Interstitials";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -319,14 +325,18 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = ReferenceApp/ReferenceApp.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = 6QHSVMF5PW;
 				INFOPLIST_FILE = ReferenceApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.cvt.test.ReferenceApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cvt.test.interstitials;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "CoreVideoTeam Test Interstitials";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
