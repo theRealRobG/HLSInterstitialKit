@@ -4,10 +4,12 @@ import AVFoundation
 public final class HLSInterstitialAsset: AVURLAsset {
     private let originalURL: URL
     private let defaultResourceLoaderDelegateQueue = DispatchQueue(
-        label: "com.csaikit.csaiasset.default-resource-loader-delegate-queue",
+        label: "com.hlsinterstitialkit.hlsinterstitialasset.default-resource-loader-delegate-queue",
         qos: .userInteractive
     )
     private let resourceLoaderDelegate: HLSInterstitialAssetResourceLoaderDelegate
+    @WeakArray
+    private var eventObservers = [HLSInterstitialAssetEventObserver]()
     
     public override init(url: URL, options: [String: Any]? = nil) {
         self.originalURL = url
@@ -43,5 +45,14 @@ public final class HLSInterstitialAsset: AVURLAsset {
             resourceLoader.setDelegate(resourceLoaderDelegate, queue: resourceLoader.delegateQueue)
             return
         }
+    }
+    
+    func add(observer: HLSInterstitialAssetEventObserver) {
+        guard !eventObservers.contains(where: { $0 === observer }) else { return }
+        eventObservers.append(observer)
+    }
+    
+    func remove(observer: HLSInterstitialAssetEventObserver) {
+        eventObservers.removeAll(where: { $0 === observer })
     }
 }

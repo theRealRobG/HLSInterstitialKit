@@ -17,6 +17,10 @@ let package = Package(
         .package(
             url: "https://github.com/comcast/mamba.git",
             .exact(Version(1, 5, 1))
+        ),
+        .package(
+            url: "https://github.com/theRealRobG/SCTE35Parser.git",
+            .exact(Version(0, 1, 0))
         )
     ],
     targets: [
@@ -24,7 +28,7 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "HLSInterstitialKit",
-            dependencies: ["mamba"]
+            dependencies: ["mamba", "SCTE35Parser"]
         ),
         .testTarget(
             name: "HLSInterstitialKitTests",
