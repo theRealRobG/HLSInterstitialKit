@@ -10,21 +10,30 @@ import AVKit
 import HLSInterstitialKit
 
 class ViewController: UIViewController {
-    let primaryURL = URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevc/master.m3u8")!
-    let interstitial = HLSInterstitialInitialEvent(
-        event: HLSInterstitialEvent(
-            urls: [
-                URL(string: "https://mssl.fwmrm.net/m/1/169843/59/6662075/YVWF0614000H_ENT_MEZZ_HULU_1925786_646/master_cmaf.m3u8")!,
-                URL(string: "https://mssl.fwmrm.net/m/1/169843/17/6662161/SBON9969000H_ENT_MEZZ_HULU_1925782_646/master_cmaf.m3u8")!
-            ],
-            resumeOffset: .zero,
-            restrictions: [.restrictJump, .restrictSkip]
-        ),
-        startTime: 10
-    )
+    let vodURL = URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevc/master.m3u8")!
+    let liveURL = URL(string: "https://live.unified-streaming.com/scte35/scte35.isml/.m3u8?hls_fmp4")!
+    var interstitial: HLSInterstitialInitialEvent {
+        HLSInterstitialInitialEvent(
+            event: advertService.getInterstitialEvent(forDuration: 30, resumeOffset: .zero),
+            startTime: 10
+        )
+    }
+    
+    private let advertService = AdvertService()
+    private var eventObserver: HLSInterstitialAssetEventObserver?
     
     @IBAction func onPlay(_ sender: Any) {
-        let asset = HLSInterstitialAsset(url: primaryURL, initialEvents: [interstitial])
+        play(url: vodURL)
+    }
+    
+    @IBAction func onPlayLive(_ sender: Any) {
+        play(url: liveURL)
+    }
+    
+    func play(url: URL) {
+        let asset = HLSInterstitialAsset(url: url, initialEvents: [interstitial])
+        eventObserver = HLSInterstitialAssetEventObserver(asset: asset)
+        eventObserver?.delegate = self
         let item = AVPlayerItem(asset: asset)
         observe(playerItem: item)
         let player = AVPlayer(playerItem: item)
@@ -63,26 +72,29 @@ class ViewController: UIViewController {
     }
 }
 
-extension AVPlayerItemErrorLogEvent {
-    open override var description: String {
-        var summary = "ErrorLogEvent |"
-        summary += " errorStatusCode:\(errorStatusCode)"
-        summary += " errorDomain:\(errorDomain)"
-        if let errorComment = errorComment {
-            summary += " errorComment:\(errorComment)"
+extension ViewController: HLSInterstitialAssetEventObserverDelegate {
+    func interstitialAssetEventObserver(
+        _ observer: HLSInterstitialAssetEventObserver,
+        shouldWaitForLoadingOfRequest request: HLSInterstitialEventLoadingRequest
+    ) -> Bool {
+        let events = request.parameters.reduce(into: [HLSInterstitialEventLoadingRequest.Parameters: HLSInterstitialEvent]()) { results, parameters in
+            guard let scteOut = parameters.scte35Out else { return }
+            switch scteOut.spliceCommand {
+            case .spliceInsert(let spliceInsert):
+                guard let ptsDuration = spliceInsert.scheduledEvent?.breakDuration?.duration else { return }
+                let duration = TimeInterval(ptsDuration) / 90000
+                let event = advertService.getInterstitialEvent(forDuration: duration)
+                results[parameters] = event
+            default:
+                return
+            }
         }
-        if let uri = uri {
-            summary += " URI:\(uri)"
+        if events.isEmpty {
+            return false
         }
-        if let date = date {
-            summary += " date:\(date)"
+        defer {
+            request.finishLoading(withResult: .success(events))
         }
-        if let serverAddress = serverAddress {
-            summary += " serverAddress:\(serverAddress)"
-        }
-        if let playbackSessionID = playbackSessionID {
-            summary += " playbackSessionID:\(playbackSessionID)"
-        }
-        return summary
+        return true
     }
 }
