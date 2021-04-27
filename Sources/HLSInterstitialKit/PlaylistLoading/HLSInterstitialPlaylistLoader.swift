@@ -2,6 +2,11 @@ import Foundation
 import mamba
 
 class HLSInterstitialPlaylistLoader {
+    var decisionHandler: HLSInterstitialEventLoadingRequestDecisionHandler? {
+        get { mediaPlaylistManipulator.decisionHandler }
+        set { mediaPlaylistManipulator.decisionHandler = newValue }
+    }
+    
     private let dataFetcher: HLSInterstitialDataFetcher
     private let hlsParser: HLSParser
     private let mediaPlaylistManipulator: MediaPlaylistManipulator

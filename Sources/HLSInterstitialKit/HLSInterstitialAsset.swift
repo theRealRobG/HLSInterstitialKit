@@ -15,6 +15,8 @@ public final class HLSInterstitialAsset: AVURLAsset {
         self.originalURL = url
         self.resourceLoaderDelegate = HLSInterstitialAssetResourceLoaderDelegate()
         super.init(url: url.toInterstitialURL(), options: options)
+        // We set the asset as the ad decision delegate for any ad decisions needed from the playlist
+        self.resourceLoaderDelegate.decisionHandler = self
         // We set our own resourceLoader.delegate to handle HLSInterstitialScheme URL requests for manifest manipulation
         resourceLoader.setDelegate(resourceLoaderDelegate, queue: defaultResourceLoaderDelegateQueue)
         // We listen for changes to the resourceLoader.delegate to ensure our delegate is always set
@@ -54,5 +56,11 @@ public final class HLSInterstitialAsset: AVURLAsset {
     
     func remove(observer: HLSInterstitialAssetEventObserver) {
         eventObservers.removeAll(where: { $0 === observer })
+    }
+}
+
+extension HLSInterstitialAsset: HLSInterstitialEventLoadingRequestDecisionHandler {
+    func shouldWaitForLoadingOfRequest(_ request: HLSInterstitialEventLoadingRequest) -> Bool {
+        return eventObservers.reduce(false) { $0 || $1.shouldWaitForLoadingOfRequest(request) }
     }
 }

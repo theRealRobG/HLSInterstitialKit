@@ -1,5 +1,6 @@
 import Foundation
 import mamba
+import SCTE35Parser
 
 extension Array where Element == HLSTag {
     func first(_ pantosTag: PantosTag) -> HLSTag? {
@@ -19,6 +20,34 @@ extension HLSTag {
     private enum URLConversionDirection {
         case fromInterstitialURL
         case toInterstitialURL
+    }
+    
+    var eventLoadingRequestParameters: HLSInterstitialEventLoadingRequest.Parameters? {
+        guard tagDescriptor == PantosTag.EXT_X_DATERANGE else { return nil }
+        guard let id = value(.id) else { return nil }
+        guard let startDateString = value(.startDate), let startDate = Date(string: startDateString) else { return nil }
+        let customAttributes = keys.reduce(into: [String: HLSInterstitialEventLoadingRequest.Parameters.ValidCustomAttribute]()) { attributes, key in
+            guard key.starts(with: "X-") else { return }
+            guard let value = value(forKey: key) else { return }
+            if let number = Double(value) {
+                attributes[key] = .number(number)
+            } else {
+                attributes[key] = .string(value)
+            }
+        }
+        return HLSInterstitialEventLoadingRequest.Parameters(
+            id: id,
+            startDate: startDate,
+            classAttribute: value(.classAttribute),
+            endDate: value(.endDate).map { Date(string: $0) } ?? nil,
+            duration: value(.duration),
+            plannedDuration: value(.plannedDuration),
+            endOnNext: value(.endOnNext) ?? false,
+            scte35CMD: value(.scte35Cmd).map { try? SpliceInfoSection($0) } ?? nil,
+            scte35Out: value(.scte35Out).map { try? SpliceInfoSection($0) } ?? nil,
+            scte35In: value(.scte35In).map { try? SpliceInfoSection($0) } ?? nil,
+            customAtributes: customAttributes
+        )
     }
     
     func value(_ pantosValue: PantosValue) -> String? {

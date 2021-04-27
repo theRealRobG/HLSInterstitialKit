@@ -3,6 +3,11 @@ import AVFoundation
 class HLSInterstitialAssetResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelegate {
     // We keep reference to any client set AVAssetResourceLoaderDelegate to forward on events we don't handle
     weak var clientSetResourceLoaderDelegate: AVAssetResourceLoaderDelegate?
+    // This is the communication point to the consumer for ad decisions
+    var decisionHandler: HLSInterstitialEventLoadingRequestDecisionHandler? {
+        get { playlistLoader.decisionHandler }
+        set { playlistLoader.decisionHandler = newValue }
+    }
     
     let playlistLoader: HLSInterstitialPlaylistLoader
     var initialEvents = [HLSInterstitialInitialEvent]()
