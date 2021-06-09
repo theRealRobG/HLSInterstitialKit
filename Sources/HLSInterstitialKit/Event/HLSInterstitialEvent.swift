@@ -12,22 +12,27 @@ public struct HLSInterstitialEvent {
     /// appropriate for live playback where playback is to be kept at a constant delay from the live edge, or for VOD playback where
     /// the HLS interstitial is intended to replace content in the primary asset.
     public let resumeOffset: TimeInterval?
+    /// Indicates rules on where the interstitial should snap to within the primary content (see
+    /// [HLSInterstitialSnap](x-source-tag://HLSInterstitialSnap) for available options).
+    public let snap: HLSInterstitialSnap
     /// Specifies a limit for the playout time of the entire interstitial. If it is present, the player should end the interstitial if playback
     /// reaches that offset from its start. Otherwise the interstitial should end upon reaching the end of the interstitial asset(s).
     public let playoutDurationLimit: TimeInterval?
     /// Specifies the restrictions that should apply to this interstitial (see
-    /// [HLSInterstitialRestrictions](x-source-tag://HLSInterstitialRestrictions)) for available restrictions.
+    /// [HLSInterstitialRestrictions](x-source-tag://HLSInterstitialRestrictions) for available restrictions).
     public let restrictions: HLSInterstitialRestrictions
     
     public init(
         urls: [URL],
         resumeOffset: TimeInterval? = nil,
+        snap: HLSInterstitialSnap = [],
         playoutDurationLimit: TimeInterval? = nil,
         restrictions: HLSInterstitialRestrictions = []
     ) {
         self.id = UUID().uuidString
         self.urls = urls
         self.resumeOffset = resumeOffset
+        self.snap = snap
         self.playoutDurationLimit = playoutDurationLimit
         self.restrictions = restrictions
     }
@@ -36,12 +41,14 @@ public struct HLSInterstitialEvent {
         id: String,
         urls: [URL],
         resumeOffset: TimeInterval? = nil,
+        snap: HLSInterstitialSnap = [],
         playoutDurationLimit: TimeInterval? = nil,
         restrictions: HLSInterstitialRestrictions = []
     ) {
         self.id = id
         self.urls = urls
         self.resumeOffset = resumeOffset
+        self.snap = snap
         self.playoutDurationLimit = playoutDurationLimit
         self.restrictions = restrictions
     }
@@ -64,11 +71,25 @@ extension HLSInterstitialEvent {
             if let playoutDurationLimit = playoutDurationLimit {
                 parsedValues["X-PLAYOUT-LIMIT"] = StringConvertibleHLSValueData(value: String(playoutDurationLimit), quoteEscaped: false)
             }
-            if restrictions.contains(.restrictJump) {
-                parsedValues["X-RESTRICT-JUMP"] = StringConvertibleHLSValueData(value: "YES", quoteEscaped: true)
+            if !snap.isEmpty {
+                var stringList = [String]()
+                if snap.contains(.snapIn) {
+                    stringList.append("IN")
+                }
+                if snap.contains(.snapOut) {
+                    stringList.append("OUT")
+                }
+                parsedValues["X-SNAP"] = StringConvertibleHLSValueData(value: stringList.joined(separator: ","), quoteEscaped: true)
             }
-            if restrictions.contains(.restrictSkip) {
-                parsedValues["X-RESTRICT-SKIP"] = StringConvertibleHLSValueData(value: "YES", quoteEscaped: true)
+            if !restrictions.isEmpty {
+                var stringList = [String]()
+                if restrictions.contains(.restrictJump) {
+                    stringList.append("JUMP")
+                }
+                if restrictions.contains(.restrictSkip) {
+                    stringList.append("SKIP")
+                }
+                parsedValues["X-RESTRICT"] = StringConvertibleHLSValueData(value: stringList.joined(separator: ","), quoteEscaped: true)
             }
             let tag = HLSTag(
                 tagDescriptor: PantosTag.EXT_X_DATERANGE,
