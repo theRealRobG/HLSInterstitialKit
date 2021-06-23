@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AVFoundation
 import HLSInterstitialKit
 
 class AdvertService {
@@ -16,16 +17,54 @@ class AdvertService {
     ]
     
     func getInterstitialEvent(forDuration duration: TimeInterval, resumeOffset: TimeInterval? = nil) -> HLSInterstitialEvent {
+        HLSInterstitialEvent(
+            urls: getAdURLs(forDuration: duration),
+            resumeOffset: resumeOffset,
+            restrictions: [.restrictJump, .restrictSkip]
+        )
+    }
+    
+    @available(iOS 15, tvOS 15, *)
+    func getAVInterstitialEvent(
+        primaryItem: AVPlayerItem,
+        forTime time: TimeInterval,
+        forDuration duration: TimeInterval,
+        resumeOffset: TimeInterval? = nil
+    ) -> AVPlayerInterstitialEvent {
+        AVPlayerInterstitialEvent(
+            primaryItem: primaryItem,
+            identifier: UUID().uuidString,
+            time: CMTime(seconds: time, preferredTimescale: 1),
+            templateItems: getAdURLs(forDuration: duration).map { AVPlayerItem(url: $0) },
+            restrictions: [.constrainsSeekingForwardInPrimaryContent, .requiresPlaybackAtPreferredRateForAdvancement],
+            resumptionOffset: resumeOffset.map { CMTime(seconds: $0, preferredTimescale: 1) } ?? .indefinite
+        )
+    }
+    
+    @available(iOS 15, tvOS 15, *)
+    func getAVInterstitialEvent(
+        primaryItem: AVPlayerItem,
+        forDate date: Date,
+        forDuration duration: TimeInterval,
+        resumeOffset: TimeInterval? = nil
+    ) -> AVPlayerInterstitialEvent {
+        AVPlayerInterstitialEvent(
+            primaryItem: primaryItem,
+            identifier: UUID().uuidString,
+            date: date,
+            templateItems: getAdURLs(forDuration: duration).map { AVPlayerItem(url: $0) },
+            restrictions: [.constrainsSeekingForwardInPrimaryContent, .requiresPlaybackAtPreferredRateForAdvancement],
+            resumptionOffset: resumeOffset.map { CMTime(seconds: $0, preferredTimescale: 1) } ?? .indefinite
+        )
+    }
+    
+    private func getAdURLs(forDuration duration: TimeInterval) -> [URL] {
         let durationPlusOne = duration + 1 // Give a little space for over-filling by a small amount.
         let numberOfAds = Int(durationPlusOne / adDuration)
         var adURLs = [URL]()
         for index in 0..<numberOfAds {
             adURLs.append(urls[index % 2])
         }
-        return  HLSInterstitialEvent(
-            urls: adURLs,
-            resumeOffset: resumeOffset,
-            restrictions: [.restrictJump, .restrictSkip]
-        )
+        return adURLs
     }
 }
