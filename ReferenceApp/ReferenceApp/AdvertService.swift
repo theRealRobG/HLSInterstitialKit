@@ -33,7 +33,7 @@ class AdvertService {
     ) -> AVPlayerInterstitialEvent {
         AVPlayerInterstitialEvent(
             primaryItem: primaryItem,
-            identifier: UUID().uuidString,
+            identifier: "\(time) (\(duration))",
             time: CMTime(seconds: time, preferredTimescale: 1),
             templateItems: getAdURLs(forDuration: duration).map { AVPlayerItem(url: $0) },
             restrictions: [.constrainsSeekingForwardInPrimaryContent, .requiresPlaybackAtPreferredRateForAdvancement],
@@ -50,7 +50,7 @@ class AdvertService {
     ) -> AVPlayerInterstitialEvent {
         AVPlayerInterstitialEvent(
             primaryItem: primaryItem,
-            identifier: UUID().uuidString,
+            identifier: "\(date) (\(duration))",
             date: date,
             templateItems: getAdURLs(forDuration: duration).map { AVPlayerItem(url: $0) },
             restrictions: [.constrainsSeekingForwardInPrimaryContent, .requiresPlaybackAtPreferredRateForAdvancement],
