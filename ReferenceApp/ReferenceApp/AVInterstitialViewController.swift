@@ -12,6 +12,8 @@ import SCTE35Parser
 
 @available(iOS 15, tvOS 15, *)
 class AVInterstitialViewController: UIViewController {
+    @IBOutlet weak var reusePlayerViewControllerSwitch: UISwitch!
+    
     let vodURL = URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevc/master.m3u8")!
     let liveURL = URL(string: "https://live.unified-streaming.com/scte35/scte35.isml/.m3u8?hls_fmp4")!
     
@@ -19,6 +21,8 @@ class AVInterstitialViewController: UIViewController {
     private let advertService = AdvertService()
     private var interstitialEventController: AVPlayerInterstitialEventController?
     private var observedItem: ObservedItem?
+    private var shouldReusePreviousPlayerViewController = false
+    private var previousPlayerController: AVPlayerViewController?
     
     @IBAction func onPlayVOD(_ sender: Any) {
         play(url: vodURL, isVOD: true)
@@ -26,6 +30,15 @@ class AVInterstitialViewController: UIViewController {
     
     @IBAction func onPlayLive(_ sender: Any) {
         play(url: liveURL, isVOD: false)
+    }
+    
+    override func viewDidLoad() {
+        shouldReusePreviousPlayerViewController = reusePlayerViewControllerSwitch.isOn
+        reusePlayerViewControllerSwitch.addTarget(
+            self,
+            action: #selector(reusePlayerViewControllerUpdated(sender:)),
+            for: .valueChanged
+        )
     }
     
     func play(url: URL, isVOD: Bool) {
@@ -44,9 +57,20 @@ class AVInterstitialViewController: UIViewController {
             eventController.events = [event]
         }
         interstitialEventController = eventController
-        let playerController = AVPlayerViewController()
+        let playerController: AVPlayerViewController
+        if shouldReusePreviousPlayerViewController {
+            playerController = previousPlayerController ?? AVPlayerViewController()
+        } else {
+            playerController = AVPlayerViewController()
+        }
+        previousPlayerController = playerController
         playerController.player = player
         present(playerController, animated: true) { player.play() }
+    }
+    
+    @objc
+    func reusePlayerViewControllerUpdated(sender: UISwitch) {
+        shouldReusePreviousPlayerViewController = sender.isOn
     }
     
     private func setUpMetadataCollector(forPlayerItem playerItem: AVPlayerItem) {

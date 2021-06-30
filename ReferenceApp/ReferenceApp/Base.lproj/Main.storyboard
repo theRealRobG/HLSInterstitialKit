@@ -59,16 +59,44 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9ex-kP-5Gu">
+                                <rect key="frame" x="76" y="228" width="262" height="100"/>
+                                <subviews>
+                                    <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iG3-SN-Uwm">
+                                        <rect key="frame" x="106.5" y="59" width="51" height="31"/>
+                                    </switch>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Reuse Player View Controller" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="C8a-a3-paw">
+                                        <rect key="frame" x="21.5" y="10" width="219" height="21"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstItem="iG3-SN-Uwm" firstAttribute="centerX" secondItem="9ex-kP-5Gu" secondAttribute="centerX" id="oYl-Ky-U2F"/>
+                                    <constraint firstAttribute="height" constant="100" id="tKP-mz-kPM"/>
+                                    <constraint firstAttribute="bottom" secondItem="iG3-SN-Uwm" secondAttribute="bottom" constant="10" id="uqI-0f-uQ1"/>
+                                    <constraint firstItem="C8a-a3-paw" firstAttribute="top" secondItem="9ex-kP-5Gu" secondAttribute="top" constant="10" id="weF-AO-5vx"/>
+                                    <constraint firstItem="C8a-a3-paw" firstAttribute="centerX" secondItem="9ex-kP-5Gu" secondAttribute="centerX" id="zII-xq-3FW"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="9ex-kP-5Gu" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" multiplier="0.63285" id="2Cg-NR-K9e"/>
                             <constraint firstItem="OOT-kZ-O8Q" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="Nk9-lx-Wph"/>
+                            <constraint firstItem="Wmw-WE-SzB" firstAttribute="top" secondItem="9ex-kP-5Gu" secondAttribute="bottom" constant="50" id="Rct-IE-Rmi"/>
                             <constraint firstItem="Wmw-WE-SzB" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="hFz-W9-8kB"/>
                             <constraint firstItem="OOT-kZ-O8Q" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="20" id="oVm-4k-Lmo"/>
+                            <constraint firstItem="9ex-kP-5Gu" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="uEf-fv-Kab"/>
                             <constraint firstItem="Wmw-WE-SzB" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" id="zot-f3-fHC"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="reusePlayerViewControllerSwitch" destination="iG3-SN-Uwm" id="5Tq-Vs-hLD"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
@@ -116,16 +144,44 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xMB-xd-wkH">
+                                <rect key="frame" x="74.5" y="228" width="265.5" height="100"/>
+                                <subviews>
+                                    <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iwz-Lt-u2b">
+                                        <rect key="frame" x="108" y="59" width="51" height="31"/>
+                                    </switch>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Reuse Player View Controller" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="49G-A7-USY">
+                                        <rect key="frame" x="23" y="10" width="219" height="21"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="100" id="OAA-9S-O1s"/>
+                                    <constraint firstItem="iwz-Lt-u2b" firstAttribute="centerX" secondItem="xMB-xd-wkH" secondAttribute="centerX" id="Xg5-wr-RoH"/>
+                                    <constraint firstAttribute="bottom" secondItem="iwz-Lt-u2b" secondAttribute="bottom" constant="10" id="ejv-Wx-ZUW"/>
+                                    <constraint firstItem="49G-A7-USY" firstAttribute="centerX" secondItem="xMB-xd-wkH" secondAttribute="centerX" id="f0n-GL-B8t"/>
+                                    <constraint firstItem="49G-A7-USY" firstAttribute="top" secondItem="xMB-xd-wkH" secondAttribute="top" constant="10" id="l2t-Se-RBv"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="zQu-uE-tB7"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="7aI-gy-ETl" firstAttribute="centerX" secondItem="zQu-uE-tB7" secondAttribute="centerX" id="CVE-bE-ED4"/>
                             <constraint firstItem="7aI-gy-ETl" firstAttribute="centerY" secondItem="zQu-uE-tB7" secondAttribute="centerY" id="Ca1-AF-PnA"/>
+                            <constraint firstItem="7aI-gy-ETl" firstAttribute="top" secondItem="xMB-xd-wkH" secondAttribute="bottom" constant="50" id="GEb-B9-WGV"/>
                             <constraint firstItem="vKm-jN-zQK" firstAttribute="top" secondItem="zQu-uE-tB7" secondAttribute="top" constant="20" id="Rwa-uE-Jhi"/>
                             <constraint firstItem="vKm-jN-zQK" firstAttribute="centerX" secondItem="zQu-uE-tB7" secondAttribute="centerX" id="eQc-cB-6u1"/>
+                            <constraint firstItem="xMB-xd-wkH" firstAttribute="centerX" secondItem="zQu-uE-tB7" secondAttribute="centerX" id="fCj-3o-Vt6"/>
+                            <constraint firstItem="xMB-xd-wkH" firstAttribute="width" secondItem="bVt-0T-2zp" secondAttribute="width" multiplier="0.641304" id="hfo-Py-eZ1"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="reusePlayerViewControllerSwitch" destination="iwz-Lt-u2b" id="Jvu-T8-4Bl"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="X9A-3B-o0k" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>

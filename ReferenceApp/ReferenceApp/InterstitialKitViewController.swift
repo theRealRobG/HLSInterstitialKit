@@ -10,6 +10,8 @@ import AVKit
 import HLSInterstitialKit
 
 class InterstitialKitViewController: UIViewController {
+    @IBOutlet weak var reusePlayerViewControllerSwitch: UISwitch!
+    
     let vodURL = URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevc/master.m3u8")!
     let liveURL = URL(string: "https://live.unified-streaming.com/scte35/scte35.isml/.m3u8?hls_fmp4")!
     var interstitial: HLSInterstitialInitialEvent {
@@ -21,6 +23,8 @@ class InterstitialKitViewController: UIViewController {
     
     private let advertService = AdvertService()
     private var eventObserver: HLSInterstitialAssetEventObserver?
+    private var shouldReusePreviousPlayerViewController = false
+    private var previousPlayerController: AVPlayerViewController?
     
     @IBAction func onPlay(_ sender: Any) {
         play(url: vodURL)
@@ -30,6 +34,15 @@ class InterstitialKitViewController: UIViewController {
         play(url: liveURL)
     }
     
+    override func viewDidLoad() {
+        shouldReusePreviousPlayerViewController = reusePlayerViewControllerSwitch.isOn
+        reusePlayerViewControllerSwitch.addTarget(
+            self,
+            action: #selector(reusePlayerViewControllerUpdated(sender:)),
+            for: .valueChanged
+        )
+    }
+    
     func play(url: URL) {
         let asset = HLSInterstitialAsset(url: url, initialEvents: [interstitial])
         eventObserver = HLSInterstitialAssetEventObserver(asset: asset)
@@ -37,9 +50,20 @@ class InterstitialKitViewController: UIViewController {
         let item = AVPlayerItem(asset: asset)
         observe(playerItem: item)
         let player = AVPlayer(playerItem: item)
-        let playerController = AVPlayerViewController()
+        let playerController: AVPlayerViewController
+        if shouldReusePreviousPlayerViewController {
+            playerController = previousPlayerController ?? AVPlayerViewController()
+        } else {
+            playerController = AVPlayerViewController()
+        }
+        previousPlayerController = playerController
         playerController.player = player
         present(playerController, animated: true) { player.play() }
+    }
+    
+    @objc
+    func reusePlayerViewControllerUpdated(sender: UISwitch) {
+        shouldReusePreviousPlayerViewController = sender.isOn
     }
 }
 
