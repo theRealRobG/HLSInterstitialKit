@@ -15,7 +15,7 @@ class AVInterstitialViewController: UIViewController {
     @IBOutlet weak var reusePlayerViewControllerSwitch: UISwitch!
     
     let vodURL = URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevc/master.m3u8")!
-    let liveURL = URL(string: "https://live.unified-streaming.com/scte35/scte35.isml/.m3u8?hls_fmp4")!
+    let liveURL = URL(string: "https://live.unified-streaming.com/scte35/scte35.isml/master.m3u8?hls_fmp4")!
     
     private let collectorQueue = DispatchQueue(label: "com.InterstitialKit.AVInterstitialViewController.collectorQueue")
     private let advertService = AdvertService()
