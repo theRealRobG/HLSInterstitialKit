@@ -12,27 +12,24 @@ import SCTE35Parser
 
 @available(iOS 15, tvOS 15, *)
 class AVInterstitialViewController: UIViewController {
-    let vodURL = URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevc/master.m3u8")!
-    let liveURL = URL(string: "https://live.unified-streaming.com/scte35/scte35.isml/master.m3u8?hls_fmp4")!
-    
     private let collectorQueue = DispatchQueue(label: "com.InterstitialKit.AVInterstitialViewController.collectorQueue")
     private let advertService = AdvertService()
+    private let playerFactory = PlayerFactory()
     private var interstitialEventController: AVPlayerInterstitialEventController?
     private var observedItem: ObservedItem?
     
     @IBAction func onPlayVOD(_ sender: Any) {
-        play(url: vodURL, isVOD: true)
+        play(playerController: playerFactory.makeVOD(playerType: .custom), isVOD: true)
     }
     
     @IBAction func onPlayLive(_ sender: Any) {
-        play(url: liveURL, isVOD: false)
+        play(playerController: playerFactory.makeLive(playerType: .custom), isVOD: false)
     }
     
-    func play(url: URL, isVOD: Bool) {
-        let item = AVPlayerItem(url: url)
+    func play(playerController: PlayerViewController, isVOD: Bool) {
+        guard let player = playerController.player, let item = player.currentItem else { fatalError() }
         observe(playerItem: item)
         setUpMetadataCollector(forPlayerItem: item)
-        let player = AVPlayer(playerItem: item)
         let eventController = AVPlayerInterstitialEventController(primaryPlayer: player)
         if isVOD {
             let event = advertService.getAVInterstitialEvent(
@@ -44,8 +41,6 @@ class AVInterstitialViewController: UIViewController {
             eventController.events = [event]
         }
         interstitialEventController = eventController
-        let playerController = AVPlayerViewController()
-        playerController.player = player
         present(playerController, animated: true) { player.play() }
     }
     

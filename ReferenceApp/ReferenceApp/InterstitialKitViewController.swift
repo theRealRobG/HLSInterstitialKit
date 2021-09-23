@@ -10,8 +10,6 @@ import AVKit
 import HLSInterstitialKit
 
 class InterstitialKitViewController: UIViewController {
-    let vodURL = URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevc/master.m3u8")!
-    let liveURL = URL(string: "https://live.unified-streaming.com/scte35/scte35.isml/master.m3u8?hls_fmp4")!
     var interstitial: HLSInterstitialInitialEvent {
         HLSInterstitialInitialEvent(
             event: advertService.getInterstitialEvent(forDuration: 30, resumeOffset: .zero),
@@ -20,26 +18,24 @@ class InterstitialKitViewController: UIViewController {
     }
     
     private let advertService = AdvertService()
+    private let playerFactory = PlayerFactory()
     private var eventObserver: HLSInterstitialAssetEventObserver?
     
     @IBAction func onPlay(_ sender: Any) {
-        play(url: vodURL)
+        play(url: playerFactory.vodURL)
     }
     
     @IBAction func onPlayLive(_ sender: Any) {
-        play(url: liveURL)
+        play(url: playerFactory.liveURL)
     }
     
     func play(url: URL) {
         let asset = HLSInterstitialAsset(url: url, initialEvents: [interstitial])
         eventObserver = HLSInterstitialAssetEventObserver(asset: asset)
         eventObserver?.delegate = self
-        let item = AVPlayerItem(asset: asset)
-        observe(playerItem: item)
-        let player = AVPlayer(playerItem: item)
-        let playerController = AVPlayerViewController()
-        playerController.player = player
-        present(playerController, animated: true) { player.play() }
+        let playerController = playerFactory.make(asset: asset, playerType: .custom)
+        playerController.player?.currentItem.map { observe(playerItem: $0) }
+        present(playerController, animated: true) { playerController.player?.play() }
     }
 }
 
