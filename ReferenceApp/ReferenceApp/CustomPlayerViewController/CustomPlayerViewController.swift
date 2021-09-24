@@ -25,7 +25,8 @@ class CustomPlayerViewController: UIViewController, PlayerViewController {
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     @IBOutlet weak var playPauseButton: UIButton!
     @IBOutlet weak var playbackSlider: UISlider!
-    
+    @IBOutlet weak var dismissButton: UIButton!
+
     override var prefersStatusBarHidden: Bool { true }
     override var prefersHomeIndicatorAutoHidden: Bool { true }
     
@@ -57,6 +58,7 @@ class CustomPlayerViewController: UIViewController, PlayerViewController {
         playerControls.isHidden = true
         activityIndicator.hidesWhenStopped = true
         playPauseButton.setTitle("", for: .normal)
+        dismissButton.setTitle("", for: .normal)
         playPauseButton.backgroundColor = UIColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 0.5)
         setPlaybackControlsVisibility()
         let tapVideoRecogniser = UITapGestureRecognizer(target: self, action: #selector(videoTapped(_:)))
@@ -72,7 +74,13 @@ class CustomPlayerViewController: UIViewController, PlayerViewController {
         playerView.frame = view.bounds
         super.viewDidLayoutSubviews()
     }
-    
+
+    @IBAction func dismissTapped(_ sender: Any) {
+        dismiss(animated: true) { [weak self] in
+            self?.player = nil
+        }
+    }
+
     @objc func videoTapped(_ sender: UIView) {
         DispatchQueue.main.async { [weak self] in
             self?.playerControls.isHidden = false

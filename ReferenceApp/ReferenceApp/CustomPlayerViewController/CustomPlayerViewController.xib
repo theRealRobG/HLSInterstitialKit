@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19115.3" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19162" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19107.5"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19144"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -12,6 +12,7 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="CustomPlayerViewController" customModule="ReferenceApp" customModuleProvider="target">
             <connections>
                 <outlet property="activityIndicator" destination="z7R-4J-qte" id="Xr1-eZ-PFK"/>
+                <outlet property="dismissButton" destination="Nku-PV-KYd" id="AWh-Dg-Ugc"/>
                 <outlet property="playPauseButton" destination="iiF-Ey-gr1" id="Bu3-Oc-JtW"/>
                 <outlet property="playbackSlider" destination="RYg-lX-ce9" id="BjY-gz-HJG"/>
                 <outlet property="playerControls" destination="TCK-Zz-F2w" id="JE2-yP-3bh"/>
@@ -26,11 +27,22 @@
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TCK-Zz-F2w" userLabel="Player Controls View">
                     <rect key="frame" x="0.0" y="44" width="414" height="818"/>
                     <subviews>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Nku-PV-KYd" userLabel="Dismiss Button">
+                            <rect key="frame" x="350.5" y="20" width="43.5" height="31"/>
+                            <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <state key="normal" title="Button"/>
+                            <buttonConfiguration key="configuration" style="plain">
+                                <imageReference key="image" image="clear.fill" catalog="system" symbolScale="large"/>
+                            </buttonConfiguration>
+                            <connections>
+                                <action selector="dismissTapped:" destination="-1" eventType="touchUpInside" id="rvE-lJ-z3i"/>
+                            </connections>
+                        </button>
                         <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="RYg-lX-ce9">
                             <rect key="frame" x="8" y="768" width="398" height="31"/>
                         </slider>
                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iiF-Ey-gr1" userLabel="Play Pause Button">
-                            <rect key="frame" x="186.5" y="392.5" width="41" height="33.5"/>
+                            <rect key="frame" x="188.5" y="393.5" width="37.5" height="31"/>
                             <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <state key="normal" title="Button"/>
                             <buttonConfiguration key="configuration" style="plain">
@@ -49,6 +61,8 @@
                         <constraint firstItem="z7R-4J-qte" firstAttribute="centerY" secondItem="TCK-Zz-F2w" secondAttribute="centerY" id="gJk-1S-g0A"/>
                         <constraint firstItem="z7R-4J-qte" firstAttribute="centerX" secondItem="TCK-Zz-F2w" secondAttribute="centerX" id="pga-Gh-ia1"/>
                         <constraint firstAttribute="bottom" secondItem="RYg-lX-ce9" secondAttribute="bottom" constant="20" id="rSl-Wc-Xvz"/>
+                        <constraint firstItem="Nku-PV-KYd" firstAttribute="top" secondItem="TCK-Zz-F2w" secondAttribute="top" constant="20" id="vEs-Iw-Ojh"/>
+                        <constraint firstAttribute="trailing" secondItem="Nku-PV-KYd" secondAttribute="trailing" constant="20" id="zev-NV-It2"/>
                     </constraints>
                 </view>
             </subviews>
@@ -64,6 +78,7 @@
         </view>
     </objects>
     <resources>
+        <image name="clear.fill" catalog="system" width="128" height="114"/>
         <image name="pause.fill" catalog="system" width="116" height="128"/>
     </resources>
 </document>
