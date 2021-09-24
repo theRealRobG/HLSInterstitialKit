@@ -5,6 +5,7 @@
 //  Created by Robert Galluccio on 23/06/2021.
 //
 
+import Foundation
 import UIKit
 import AVKit
 import AVFoundation
@@ -19,6 +20,8 @@ class AVInterstitialViewController: UIViewController {
     private let playerFactory = PlayerFactory()
     private var interstitialEventController: AVPlayerInterstitialEventController?
     private var observedItem: ObservedItem?
+    private var currentEventObserver: NSObjectProtocol?
+    private var jumpRestrictionCompletion: ((AVPlayerInterstitialEvent?) -> Void)?
     
     @IBAction func onPlayVOD(_ sender: Any) {
         play(
@@ -42,10 +45,21 @@ class AVInterstitialViewController: UIViewController {
         super.viewDidLoad()
         playerViewControllerPicker.delegate = self
         playerViewControllerPicker.dataSource = self
+        currentEventObserver.map { NotificationCenter.default.removeObserver($0) }
+        currentEventObserver = NotificationCenter.default.addObserver(
+            forName: AVPlayerInterstitialEventController.currentEventDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.jumpRestrictionCompletion?(self?.interstitialEventController?.currentEvent)
+        }
     }
     
     func play(playerController: PlayerViewController, isVOD: Bool) {
         guard let player = playerController.player, let item = player.currentItem else { fatalError() }
+        if let playerViewController = playerController as? CustomPlayerViewController {
+            playerViewController.delegate = self
+        }
         observe(playerItem: item)
         setUpMetadataCollector(forPlayerItem: item)
         let eventController = AVPlayerInterstitialEventController(primaryPlayer: player)
@@ -128,6 +142,30 @@ extension AVInterstitialViewController: UIPickerViewDataSource, UIPickerViewDele
         case .avKit, .none: return "AVPlayerViewController"
         case .custom: return "CustomPlayerViewController"
         }
+    }
+}
+
+@available(iOS 15, tvOS 15, *)
+extension AVInterstitialViewController: CustomPlayerViewControllerDelegate {
+    func playerViewController(
+        _ playerViewController: CustomPlayerViewController,
+        timeToSeekAfterUserNavigatedFrom oldTime: CMTime,
+        to targetTime: CMTime
+    ) -> CMTime {
+        guard let interstitialEventController = self.interstitialEventController, oldTime < targetTime else { return targetTime }
+        let event = interstitialEventController.events
+            .filter { $0.restrictions.contains(.constrainsSeekingForwardInPrimaryContent) }
+            .filter { (oldTime..<targetTime).contains($0.time) }
+            .sorted { $0.time < $1.time }
+            .last
+        guard let forcedInterstitial = event else { return targetTime }
+        let updatedInterstitialEvent = forcedInterstitial.updated(resumptionOffset: targetTime - forcedInterstitial.time)
+        interstitialEventController.events.append(updatedInterstitialEvent)
+        jumpRestrictionCompletion = { [weak self] currentEvent in
+            guard currentEvent?.identifier != updatedInterstitialEvent.identifier else { return }
+            self?.interstitialEventController?.events.append(forcedInterstitial)
+        }
+        return updatedInterstitialEvent.time
     }
 }
 

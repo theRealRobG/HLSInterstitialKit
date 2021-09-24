@@ -8,6 +8,14 @@
 import UIKit
 import AVFoundation
 
+protocol CustomPlayerViewControllerDelegate: AnyObject {
+    func playerViewController(
+        _ playerViewController: CustomPlayerViewController,
+        timeToSeekAfterUserNavigatedFrom oldTime: CMTime,
+        to targetTime: CMTime
+    ) -> CMTime
+}
+
 class CustomPlayerViewController: UIViewController, PlayerViewController {
     var player: AVPlayer? {
         willSet {
@@ -20,6 +28,7 @@ class CustomPlayerViewController: UIViewController, PlayerViewController {
             player.map { setUp(player: $0) }
         }
     }
+    weak var delegate: CustomPlayerViewControllerDelegate?
     
     @IBOutlet weak var playerControls: UIView!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
@@ -112,7 +121,12 @@ class CustomPlayerViewController: UIViewController, PlayerViewController {
                 isPlaybackSliderBeingDragged = false
                 guard let playerItem = player?.currentItem else { return }
                 let time = playerItem.playbackPosition(forPercentageComplete: slider.value)
-                playerItem.seek(to: time, completionHandler: nil)
+                let updatedTime = delegate?.playerViewController(self, timeToSeekAfterUserNavigatedFrom: playerItem.currentTime(), to: time) ?? time
+                if updatedTime != time {
+                    playerItem.seek(to: updatedTime, toleranceBefore: .zero, toleranceAfter: .zero, completionHandler: nil)
+                } else {
+                    playerItem.seek(to: updatedTime, completionHandler: nil)
+                }
             default:
                 break
             }

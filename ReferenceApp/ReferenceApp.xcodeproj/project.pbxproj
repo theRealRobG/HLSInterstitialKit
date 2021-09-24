@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E8025B2026FD5F8B00188FB1 /* AVPlayerInterstitialEvent+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8025B1F26FD5F8B00188FB1 /* AVPlayerInterstitialEvent+Extension.swift */; };
 		E856BEE12682AF0C00E9F72E /* UIViewController+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E856BEE02682AF0C00E9F72E /* UIViewController+Extensions.swift */; };
 		E884E23026A21FBC0084BAD7 /* CustomPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E884E22F26A21FBC0084BAD7 /* CustomPlayerViewController.swift */; };
 		E884E23326A220AA0084BAD7 /* CustomPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E884E23226A220AA0084BAD7 /* CustomPlayerView.swift */; };
@@ -27,6 +28,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E8025B1F26FD5F8B00188FB1 /* AVPlayerInterstitialEvent+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AVPlayerInterstitialEvent+Extension.swift"; sourceTree = "<group>"; };
 		E856BEE02682AF0C00E9F72E /* UIViewController+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Extensions.swift"; sourceTree = "<group>"; };
 		E8575EFF2627CFF200ABAAA5 /* ReferenceApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ReferenceApp.entitlements; sourceTree = "<group>"; };
 		E884E22F26A21FBC0084BAD7 /* CustomPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPlayerViewController.swift; sourceTree = "<group>"; };
@@ -97,6 +99,7 @@
 				E8CC3D8A26378347008269F0 /* AdvertService.swift */,
 				E8E302F826227AEA00CF6049 /* AppDelegate.swift */,
 				E8E80D962682A7F2006C1843 /* AVInterstitialViewController.swift */,
+				E8025B1F26FD5F8B00188FB1 /* AVPlayerInterstitialEvent+Extension.swift */,
 				E8CC3D8C2637874D008269F0 /* AVPlayerItemErrorLogEvent+Extension.swift */,
 				E8E80D942682A40C006C1843 /* HomePageViewController.swift */,
 				E8E302FC26227AEA00CF6049 /* InterstitialKitViewController.swift */,
@@ -201,6 +204,7 @@
 				E884E23326A220AA0084BAD7 /* CustomPlayerView.swift in Sources */,
 				E8E80D952682A40C006C1843 /* HomePageViewController.swift in Sources */,
 				E856BEE12682AF0C00E9F72E /* UIViewController+Extensions.swift in Sources */,
+				E8025B2026FD5F8B00188FB1 /* AVPlayerInterstitialEvent+Extension.swift in Sources */,
 				E8E302F926227AEA00CF6049 /* AppDelegate.swift in Sources */,
 				E8CC3D8D2637874D008269F0 /* AVPlayerItemErrorLogEvent+Extension.swift in Sources */,
 				E884E23726A2246F0084BAD7 /* PlayerViewController.swift in Sources */,
