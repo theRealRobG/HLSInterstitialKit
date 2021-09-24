@@ -29,7 +29,11 @@ struct PlayerFactory {
         case .avKit:
             playerViewController = AVPlayerViewController()
         case .custom:
+            #if os(iOS)
             playerViewController = CustomPlayerViewController()
+            #else
+            fatalError("CustomPlayerViewController does not exist - should not try to use it")
+            #endif
         }
         playerViewController.player = player
         return playerViewController

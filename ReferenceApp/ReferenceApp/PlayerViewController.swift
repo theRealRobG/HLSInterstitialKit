@@ -12,4 +12,16 @@ protocol PlayerViewController: UIViewController {
     var player: AVPlayer? { get set }
 }
 
+protocol PlayerViewControllerJumpControlDelegate: AnyObject {
+    func playerViewController(
+        _ playerViewController: PlayerViewControllerJumpControl,
+        timeToSeekAfterUserNavigatedFrom oldTime: CMTime,
+        to targetTime: CMTime
+    ) -> CMTime
+}
+
+protocol PlayerViewControllerJumpControl: PlayerViewController {
+    var delegate: PlayerViewControllerJumpControlDelegate? { get set }
+}
+
 extension AVPlayerViewController: PlayerViewController {}

@@ -16,7 +16,9 @@ class InterstitialKitViewController: UIViewController {
             startTime: 10
         )
     }
+    #if os(iOS)
     @IBOutlet weak var playerControllerPicker: UIPickerView!
+    #endif
 
     private let advertService = AdvertService()
     private let playerFactory = PlayerFactory()
@@ -32,18 +34,24 @@ class InterstitialKitViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        #if os(iOS)
         playerControllerPicker.delegate = self
         playerControllerPicker.dataSource = self
+        #endif
     }
     
     func play(url: URL) {
         let asset = HLSInterstitialAsset(url: url, initialEvents: [interstitial])
         eventObserver = HLSInterstitialAssetEventObserver(asset: asset)
         eventObserver?.delegate = self
+        #if os(iOS)
         let playerController = playerFactory.make(
             asset: asset,
             playerType: PlayerFactory.PlayerViewControllerType(rawValue: playerControllerPicker.selectedRow(inComponent: 0)) ?? .avKit
         )
+        #else
+        let playerController = playerFactory.make(asset: asset, playerType: .avKit)
+        #endif
         playerController.player?.currentItem.map { observe(playerItem: $0) }
         present(playerController, animated: true) { playerController.player?.play() }
     }
@@ -76,6 +84,7 @@ extension InterstitialKitViewController: HLSInterstitialAssetEventObserverDelega
     }
 }
 
+#if os(iOS)
 extension InterstitialKitViewController: UIPickerViewDataSource, UIPickerViewDelegate {
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1
@@ -92,3 +101,4 @@ extension InterstitialKitViewController: UIPickerViewDataSource, UIPickerViewDel
         }
     }
 }
+#endif

@@ -13,7 +13,9 @@ import SCTE35Parser
 
 @available(iOS 15, tvOS 15, *)
 class AVInterstitialViewController: UIViewController {
+    #if os(iOS)
     @IBOutlet weak var playerViewControllerPicker: UIPickerView!
+    #endif
     
     private let collectorQueue = DispatchQueue(label: "com.InterstitialKit.AVInterstitialViewController.collectorQueue")
     private let advertService = AdvertService()
@@ -24,27 +26,37 @@ class AVInterstitialViewController: UIViewController {
     private var jumpRestrictionCompletion: ((AVPlayerInterstitialEvent?) -> Void)?
     
     @IBAction func onPlayVOD(_ sender: Any) {
+        #if os(iOS)
         play(
             playerController: playerFactory.makeVOD(
                 playerType: PlayerFactory.PlayerViewControllerType(rawValue: playerViewControllerPicker.selectedRow(inComponent: 0)) ?? .avKit
             ),
             isVOD: true
         )
+        #else
+        play(playerController: playerFactory.makeVOD(playerType: .avKit), isVOD: true)
+        #endif
     }
     
     @IBAction func onPlayLive(_ sender: Any) {
+        #if os(iOS)
         play(
             playerController: playerFactory.makeLive(
                 playerType: PlayerFactory.PlayerViewControllerType(rawValue: playerViewControllerPicker.selectedRow(inComponent: 0)) ?? .avKit
             ),
             isVOD: false
         )
+        #else
+        play(playerController: playerFactory.makeLive(playerType: .avKit), isVOD: false)
+        #endif
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        #if os(iOS)
         playerViewControllerPicker.delegate = self
         playerViewControllerPicker.dataSource = self
+        #endif
         currentEventObserver.map { NotificationCenter.default.removeObserver($0) }
         currentEventObserver = NotificationCenter.default.addObserver(
             forName: AVPlayerInterstitialEventController.currentEventDidChangeNotification,
@@ -57,7 +69,7 @@ class AVInterstitialViewController: UIViewController {
     
     func play(playerController: PlayerViewController, isVOD: Bool) {
         guard let player = playerController.player, let item = player.currentItem else { fatalError() }
-        if let playerViewController = playerController as? CustomPlayerViewController {
+        if let playerViewController = playerController as? PlayerViewControllerJumpControl {
             playerViewController.delegate = self
         }
         observe(playerItem: item)
@@ -127,6 +139,7 @@ extension AVInterstitialViewController: AVPlayerItemMetadataCollectorPushDelegat
     }
 }
 
+#if os(iOS)
 @available(iOS 15, tvOS 15, *)
 extension AVInterstitialViewController: UIPickerViewDataSource, UIPickerViewDelegate {
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
@@ -144,11 +157,12 @@ extension AVInterstitialViewController: UIPickerViewDataSource, UIPickerViewDele
         }
     }
 }
+#endif
 
 @available(iOS 15, tvOS 15, *)
-extension AVInterstitialViewController: CustomPlayerViewControllerDelegate {
+extension AVInterstitialViewController: PlayerViewControllerJumpControlDelegate {
     func playerViewController(
-        _ playerViewController: CustomPlayerViewController,
+        _ playerViewController: PlayerViewControllerJumpControl,
         timeToSeekAfterUserNavigatedFrom oldTime: CMTime,
         to targetTime: CMTime
     ) -> CMTime {

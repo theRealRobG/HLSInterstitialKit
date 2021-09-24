@@ -8,15 +8,7 @@
 import UIKit
 import AVFoundation
 
-protocol CustomPlayerViewControllerDelegate: AnyObject {
-    func playerViewController(
-        _ playerViewController: CustomPlayerViewController,
-        timeToSeekAfterUserNavigatedFrom oldTime: CMTime,
-        to targetTime: CMTime
-    ) -> CMTime
-}
-
-class CustomPlayerViewController: UIViewController, PlayerViewController {
+class CustomPlayerViewController: UIViewController, PlayerViewControllerJumpControl {
     var player: AVPlayer? {
         willSet {
             playerTimeObserver.map { player?.removeTimeObserver($0) }
@@ -28,7 +20,7 @@ class CustomPlayerViewController: UIViewController, PlayerViewController {
             player.map { setUp(player: $0) }
         }
     }
-    weak var delegate: CustomPlayerViewControllerDelegate?
+    weak var delegate: PlayerViewControllerJumpControlDelegate?
     
     @IBOutlet weak var playerControls: UIView!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
