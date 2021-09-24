@@ -37,7 +37,7 @@ struct PlayerFactory {
 }
 
 extension PlayerFactory {
-    enum PlayerViewControllerType {
+    enum PlayerViewControllerType: Int {
         case avKit
         case custom
     }

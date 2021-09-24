@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19115.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="p1V-0L-37J">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19162" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="p1V-0L-37J">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19107.4"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19144"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -54,21 +54,30 @@
                                 </constraints>
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="InterstitialKit Approach" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OOT-kZ-O8Q">
-                                <rect key="frame" x="41.5" y="64" width="331" height="41"/>
+                                <rect key="frame" x="56" y="64" width="302.5" height="37"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle0"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <pickerView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="oTp-lA-Eym">
+                                <rect key="frame" x="0.0" y="162" width="414" height="216"/>
+                            </pickerView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="OOT-kZ-O8Q" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="Nk9-lx-Wph"/>
                             <constraint firstItem="Wmw-WE-SzB" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="hFz-W9-8kB"/>
+                            <constraint firstItem="oTp-lA-Eym" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" id="jar-Cc-HxI"/>
                             <constraint firstItem="OOT-kZ-O8Q" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="20" id="oVm-4k-Lmo"/>
+                            <constraint firstItem="oTp-lA-Eym" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="rTN-3X-QiW"/>
+                            <constraint firstItem="Wmw-WE-SzB" firstAttribute="top" secondItem="oTp-lA-Eym" secondAttribute="bottom" id="w7Y-5P-zbD"/>
                             <constraint firstItem="Wmw-WE-SzB" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" id="zot-f3-fHC"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="playerControllerPicker" destination="oTp-lA-Eym" id="KvS-OI-EdH"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
@@ -111,21 +120,30 @@
                                 </constraints>
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="AVInterstitial Approach" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vKm-jN-zQK">
-                                <rect key="frame" x="40.5" y="64" width="333" height="41"/>
+                                <rect key="frame" x="55" y="64" width="304.5" height="37"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle0"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <pickerView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1Dr-zQ-uWf">
+                                <rect key="frame" x="0.0" y="162" width="414" height="216"/>
+                            </pickerView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="zQu-uE-tB7"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="7aI-gy-ETl" firstAttribute="centerX" secondItem="zQu-uE-tB7" secondAttribute="centerX" id="CVE-bE-ED4"/>
                             <constraint firstItem="7aI-gy-ETl" firstAttribute="centerY" secondItem="zQu-uE-tB7" secondAttribute="centerY" id="Ca1-AF-PnA"/>
+                            <constraint firstItem="1Dr-zQ-uWf" firstAttribute="centerX" secondItem="zQu-uE-tB7" secondAttribute="centerX" id="HNM-Nd-Ows"/>
+                            <constraint firstItem="7aI-gy-ETl" firstAttribute="top" secondItem="1Dr-zQ-uWf" secondAttribute="bottom" id="KTa-rJ-09l"/>
                             <constraint firstItem="vKm-jN-zQK" firstAttribute="top" secondItem="zQu-uE-tB7" secondAttribute="top" constant="20" id="Rwa-uE-Jhi"/>
+                            <constraint firstItem="1Dr-zQ-uWf" firstAttribute="width" secondItem="bVt-0T-2zp" secondAttribute="width" id="Xbw-6e-zdV"/>
                             <constraint firstItem="vKm-jN-zQK" firstAttribute="centerX" secondItem="zQu-uE-tB7" secondAttribute="centerX" id="eQc-cB-6u1"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="playerViewControllerPicker" destination="1Dr-zQ-uWf" id="bkO-Od-3KF"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="X9A-3B-o0k" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>

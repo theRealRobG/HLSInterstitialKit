@@ -16,7 +16,8 @@ class InterstitialKitViewController: UIViewController {
             startTime: 10
         )
     }
-    
+    @IBOutlet weak var playerControllerPicker: UIPickerView!
+
     private let advertService = AdvertService()
     private let playerFactory = PlayerFactory()
     private var eventObserver: HLSInterstitialAssetEventObserver?
@@ -28,12 +29,21 @@ class InterstitialKitViewController: UIViewController {
     @IBAction func onPlayLive(_ sender: Any) {
         play(url: playerFactory.liveURL)
     }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        playerControllerPicker.delegate = self
+        playerControllerPicker.dataSource = self
+    }
     
     func play(url: URL) {
         let asset = HLSInterstitialAsset(url: url, initialEvents: [interstitial])
         eventObserver = HLSInterstitialAssetEventObserver(asset: asset)
         eventObserver?.delegate = self
-        let playerController = playerFactory.make(asset: asset, playerType: .custom)
+        let playerController = playerFactory.make(
+            asset: asset,
+            playerType: PlayerFactory.PlayerViewControllerType(rawValue: playerControllerPicker.selectedRow(inComponent: 0)) ?? .avKit
+        )
         playerController.player?.currentItem.map { observe(playerItem: $0) }
         present(playerController, animated: true) { playerController.player?.play() }
     }
@@ -63,5 +73,22 @@ extension InterstitialKitViewController: HLSInterstitialAssetEventObserverDelega
             request.finishLoading(withResult: .success(events))
         }
         return true
+    }
+}
+
+extension InterstitialKitViewController: UIPickerViewDataSource, UIPickerViewDelegate {
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return 2
+    }
+
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        switch PlayerFactory.PlayerViewControllerType(rawValue: row) {
+        case .avKit, .none: return "AVPlayerViewController"
+        case .custom: return "CustomPlayerViewController"
+        }
     }
 }

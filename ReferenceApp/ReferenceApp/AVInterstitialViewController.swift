@@ -12,6 +12,8 @@ import SCTE35Parser
 
 @available(iOS 15, tvOS 15, *)
 class AVInterstitialViewController: UIViewController {
+    @IBOutlet weak var playerViewControllerPicker: UIPickerView!
+    
     private let collectorQueue = DispatchQueue(label: "com.InterstitialKit.AVInterstitialViewController.collectorQueue")
     private let advertService = AdvertService()
     private let playerFactory = PlayerFactory()
@@ -19,11 +21,27 @@ class AVInterstitialViewController: UIViewController {
     private var observedItem: ObservedItem?
     
     @IBAction func onPlayVOD(_ sender: Any) {
-        play(playerController: playerFactory.makeVOD(playerType: .custom), isVOD: true)
+        play(
+            playerController: playerFactory.makeVOD(
+                playerType: PlayerFactory.PlayerViewControllerType(rawValue: playerViewControllerPicker.selectedRow(inComponent: 0)) ?? .avKit
+            ),
+            isVOD: true
+        )
     }
     
     @IBAction func onPlayLive(_ sender: Any) {
-        play(playerController: playerFactory.makeLive(playerType: .custom), isVOD: false)
+        play(
+            playerController: playerFactory.makeLive(
+                playerType: PlayerFactory.PlayerViewControllerType(rawValue: playerViewControllerPicker.selectedRow(inComponent: 0)) ?? .avKit
+            ),
+            isVOD: false
+        )
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        playerViewControllerPicker.delegate = self
+        playerViewControllerPicker.dataSource = self
     }
     
     func play(playerController: PlayerViewController, isVOD: Bool) {
@@ -92,6 +110,24 @@ extension AVInterstitialViewController: AVPlayerItemMetadataCollectorPushDelegat
         }
         print("scheduled events \(events.count) - \(events.map { $0.identifier })")
         eventController.events = events
+    }
+}
+
+@available(iOS 15, tvOS 15, *)
+extension AVInterstitialViewController: UIPickerViewDataSource, UIPickerViewDelegate {
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return 2
+    }
+
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        switch PlayerFactory.PlayerViewControllerType(rawValue: row) {
+        case .avKit, .none: return "AVPlayerViewController"
+        case .custom: return "CustomPlayerViewController"
+        }
     }
 }
 
