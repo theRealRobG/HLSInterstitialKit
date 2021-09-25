@@ -133,7 +133,7 @@ extension AVInterstitialViewController: AVPlayerItemMetadataCollectorPushDelegat
             }
         }
         print("scheduled events \(events.count) - \(events.map { $0.identifier })")
-        eventController.events = events
+        eventController.events.append(contentsOf: events)
     }
 }
 
