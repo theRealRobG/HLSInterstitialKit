@@ -23,8 +23,7 @@ class AdvertService {
             restrictions: [.restrictJump, .restrictSkip]
         )
     }
-    
-    @available(iOS 15, tvOS 15, *)
+
     func getAVInterstitialEvent(
         primaryItem: AVPlayerItem,
         forTime time: TimeInterval,
@@ -40,8 +39,7 @@ class AdvertService {
             resumptionOffset: resumeOffset.map { CMTime(seconds: $0, preferredTimescale: 1) } ?? .indefinite
         )
     }
-    
-    @available(iOS 15, tvOS 15, *)
+
     func getAVInterstitialEvent(
         primaryItem: AVPlayerItem,
         forDate date: Date,

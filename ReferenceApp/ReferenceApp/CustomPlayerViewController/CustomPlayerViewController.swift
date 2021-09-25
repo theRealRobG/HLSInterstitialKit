@@ -11,13 +11,26 @@ import AVFoundation
 class CustomPlayerViewController: UIViewController, PlayerViewControllerJumpControl {
     var player: AVPlayer? {
         willSet {
+            playerCueMarkerObserver?.delegate = nil
             playerTimeObserver.map { player?.removeTimeObserver($0) }
+            seekableRangesObservation?.invalidate()
             timeControlStatusObserver?.invalidate()
             timeControlStatusObserver = nil
         }
         didSet {
             playerView.playerLayer.player = player
-            player.map { setUp(player: $0) }
+            player.map {
+                setUp(player: $0)
+                playerCueMarkerObserver = PlayerCueMarkerObserver(player: $0)
+                playerCueMarkerObserver?.delegate = self
+                currentItemObservation = player?.observe(\.currentItem) { [weak self] _, _ in
+                    guard let self = self, let currentItem = self.player?.currentItem else { return }
+                    self.seekableRangesObservation = currentItem.observe(\.seekableTimeRanges) { [weak self] _, _ in
+                        self?.updateCuePoints(cueTimes: self?.playerCueMarkerObserver?.cueTimes ?? [])
+                    }
+                }
+            }
+            updateCuePoints(cueTimes: playerCueMarkerObserver?.cueTimes ?? [])
         }
     }
     weak var delegate: PlayerViewControllerJumpControlDelegate?
@@ -25,13 +38,16 @@ class CustomPlayerViewController: UIViewController, PlayerViewControllerJumpCont
     @IBOutlet weak var playerControls: UIView!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     @IBOutlet weak var playPauseButton: UIButton!
-    @IBOutlet weak var playbackSlider: UISlider!
+    @IBOutlet weak var playbackSlider: CuePointSlider!
     @IBOutlet weak var dismissButton: UIButton!
 
     override var prefersStatusBarHidden: Bool { true }
     override var prefersHomeIndicatorAutoHidden: Bool { true }
     
     private let playerView = CustomPlayerView()
+    private var playerCueMarkerObserver: PlayerCueMarkerObserver?
+    private var currentItemObservation: NSKeyValueObservation?
+    private var seekableRangesObservation: NSKeyValueObservation?
     private let playerTimeObserverQueue = DispatchQueue(label: "player-time-observer")
     private var timeControlStatusObserver: NSKeyValueObservation?
     private var playerTimeObserver: Any?
@@ -73,6 +89,7 @@ class CustomPlayerViewController: UIViewController, PlayerViewControllerJumpCont
     
     override func viewDidLayoutSubviews() {
         playerView.frame = view.bounds
+        updateCuePoints(cueTimes: playerCueMarkerObserver?.cueTimes ?? [])
         super.viewDidLayoutSubviews()
     }
 
@@ -193,6 +210,23 @@ class CustomPlayerViewController: UIViewController, PlayerViewControllerJumpCont
                 self.activityIndicator.stopAnimating()
             }
         }
+    }
+}
+
+extension CustomPlayerViewController: PlayerCueMarkerObserverDelegate {
+    private var cuePointTag: Int { 6969 }
+
+    func playerCueMarkerObserver(_ observer: PlayerCueMarkerObserver, didUpdateCueTimes cueTimes: [CMTime]) {
+        updateCuePoints(cueTimes: cueTimes)
+    }
+
+    func updateCuePoints(cueTimes: [CMTime]) {
+        guard let playbackSlider = playbackSlider else { return }
+        guard let currentItem = player?.currentItem, !currentItem.seekableTimeRanges.isEmpty else {
+            playbackSlider.cuePositionValues = []
+            return
+        }
+        playbackSlider.cuePositionValues = cueTimes.map { currentItem.percentageComplete(forPlaybackTime: $0) }
     }
 }
 

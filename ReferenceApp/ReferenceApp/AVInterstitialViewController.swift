@@ -11,7 +11,6 @@ import AVKit
 import AVFoundation
 import SCTE35Parser
 
-@available(iOS 15, tvOS 15, *)
 class AVInterstitialViewController: UIViewController {
     #if os(iOS)
     @IBOutlet weak var playerViewControllerPicker: UIPickerView!
@@ -96,7 +95,6 @@ class AVInterstitialViewController: UIViewController {
     }
 }
 
-@available(iOS 15, tvOS 15, *)
 extension AVInterstitialViewController: AVPlayerItemMetadataCollectorPushDelegate {
     func metadataCollector(
         _ metadataCollector: AVPlayerItemMetadataCollector,
@@ -140,7 +138,6 @@ extension AVInterstitialViewController: AVPlayerItemMetadataCollectorPushDelegat
 }
 
 #if os(iOS)
-@available(iOS 15, tvOS 15, *)
 extension AVInterstitialViewController: UIPickerViewDataSource, UIPickerViewDelegate {
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1
@@ -159,7 +156,6 @@ extension AVInterstitialViewController: UIPickerViewDataSource, UIPickerViewDele
 }
 #endif
 
-@available(iOS 15, tvOS 15, *)
 extension AVInterstitialViewController: PlayerViewControllerJumpControlDelegate {
     func playerViewController(
         _ playerViewController: PlayerViewControllerJumpControl,
@@ -183,7 +179,6 @@ extension AVInterstitialViewController: PlayerViewControllerJumpControlDelegate 
     }
 }
 
-@available(iOS 15, tvOS 15, *)
 private extension AVInterstitialViewController {
     struct ObservedItem {
         let playerItem: AVPlayerItem

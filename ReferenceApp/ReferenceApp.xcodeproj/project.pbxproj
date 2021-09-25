@@ -29,6 +29,8 @@
 		E884E23726A2246F0084BAD7 /* PlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E884E23626A2246F0084BAD7 /* PlayerViewController.swift */; };
 		E884E23926A2269A0084BAD7 /* PlayerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = E884E23826A2269A0084BAD7 /* PlayerFactory.swift */; };
 		E889066926FD659000D837E4 /* HLSInterstitialKit in Frameworks */ = {isa = PBXBuildFile; productRef = E889066826FD659000D837E4 /* HLSInterstitialKit */; };
+		E8C4CD0926FF33B40060576B /* PlayerCueMarkerObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C4CD0826FF33B40060576B /* PlayerCueMarkerObserver.swift */; };
+		E8C4CD0B26FF4C520060576B /* CuePointSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C4CD0A26FF4C520060576B /* CuePointSlider.swift */; };
 		E8CC3D8B26378347008269F0 /* AdvertService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8CC3D8A26378347008269F0 /* AdvertService.swift */; };
 		E8CC3D8D2637874D008269F0 /* AVPlayerItemErrorLogEvent+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8CC3D8C2637874D008269F0 /* AVPlayerItemErrorLogEvent+Extension.swift */; };
 		E8E302F926227AEA00CF6049 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8E302F826227AEA00CF6049 /* AppDelegate.swift */; };
@@ -56,6 +58,8 @@
 		E884E23426A221D30084BAD7 /* CustomPlayerViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CustomPlayerViewController.xib; sourceTree = "<group>"; };
 		E884E23626A2246F0084BAD7 /* PlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerViewController.swift; sourceTree = "<group>"; };
 		E884E23826A2269A0084BAD7 /* PlayerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerFactory.swift; sourceTree = "<group>"; };
+		E8C4CD0826FF33B40060576B /* PlayerCueMarkerObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerCueMarkerObserver.swift; sourceTree = "<group>"; };
+		E8C4CD0A26FF4C520060576B /* CuePointSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CuePointSlider.swift; sourceTree = "<group>"; };
 		E8CC3D8A26378347008269F0 /* AdvertService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvertService.swift; sourceTree = "<group>"; };
 		E8CC3D8C2637874D008269F0 /* AVPlayerItemErrorLogEvent+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AVPlayerItemErrorLogEvent+Extension.swift"; sourceTree = "<group>"; };
 		E8E302F526227AEA00CF6049 /* ReferenceApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReferenceApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -105,8 +109,10 @@
 		E884E22E26A21FA00084BAD7 /* CustomPlayerViewController */ = {
 			isa = PBXGroup;
 			children = (
+				E8C4CD0A26FF4C520060576B /* CuePointSlider.swift */,
 				E884E23226A220AA0084BAD7 /* CustomPlayerView.swift */,
 				E884E22F26A21FBC0084BAD7 /* CustomPlayerViewController.swift */,
+				E8C4CD0826FF33B40060576B /* PlayerCueMarkerObserver.swift */,
 				E884E23426A221D30084BAD7 /* CustomPlayerViewController.xib */,
 			);
 			path = CustomPlayerViewController;
@@ -291,6 +297,7 @@
 			files = (
 				E8E302FD26227AEA00CF6049 /* InterstitialKitViewController.swift in Sources */,
 				E884E23026A21FBC0084BAD7 /* CustomPlayerViewController.swift in Sources */,
+				E8C4CD0B26FF4C520060576B /* CuePointSlider.swift in Sources */,
 				E8CC3D8B26378347008269F0 /* AdvertService.swift in Sources */,
 				E884E23926A2269A0084BAD7 /* PlayerFactory.swift in Sources */,
 				E8E80D972682A7F2006C1843 /* AVInterstitialViewController.swift in Sources */,
@@ -301,6 +308,7 @@
 				E8E302F926227AEA00CF6049 /* AppDelegate.swift in Sources */,
 				E8CC3D8D2637874D008269F0 /* AVPlayerItemErrorLogEvent+Extension.swift in Sources */,
 				E884E23726A2246F0084BAD7 /* PlayerViewController.swift in Sources */,
+				E8C4CD0926FF33B40060576B /* PlayerCueMarkerObserver.swift in Sources */,
 				E8E302FB26227AEA00CF6049 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -531,6 +539,7 @@
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = 6QHSVMF5PW;
 				INFOPLIST_FILE = ReferenceApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -553,6 +562,7 @@
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = 6QHSVMF5PW;
 				INFOPLIST_FILE = ReferenceApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

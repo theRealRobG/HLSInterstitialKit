@@ -7,7 +7,6 @@
 
 import AVFoundation
 
-@available(iOS 15, tvOS 15, *)
 extension AVPlayerInterstitialEvent {
     func updated(resumptionOffset: CMTime) -> AVPlayerInterstitialEvent {
         guard let primaryItem = self.primaryItem else {
