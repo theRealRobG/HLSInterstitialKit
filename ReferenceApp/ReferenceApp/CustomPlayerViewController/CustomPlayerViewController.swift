@@ -216,17 +216,20 @@ class CustomPlayerViewController: UIViewController, PlayerViewControllerJumpCont
 extension CustomPlayerViewController: PlayerCueMarkerObserverDelegate {
     private var cuePointTag: Int { 6969 }
 
-    func playerCueMarkerObserver(_ observer: PlayerCueMarkerObserver, didUpdateCueTimes cueTimes: [CMTime]) {
+    func playerCueMarkerObserver(_ observer: PlayerCueMarkerObserver, didUpdateCueTimes cueTimes: [PlayerCueMarkerObserver.CueMarker]) {
         updateCuePoints(cueTimes: cueTimes)
     }
 
-    func updateCuePoints(cueTimes: [CMTime]) {
+    func updateCuePoints(cueTimes: [PlayerCueMarkerObserver.CueMarker]) {
         guard let playbackSlider = playbackSlider else { return }
         guard let currentItem = player?.currentItem, !currentItem.seekableTimeRanges.isEmpty else {
             playbackSlider.cuePositionValues = []
             return
         }
-        playbackSlider.cuePositionValues = cueTimes.map { currentItem.percentageComplete(forPlaybackTime: $0) }
+        let dateTimePair = (currentItem.currentDate(), currentItem.currentTime())
+        playbackSlider.cuePositionValues = cueTimes
+            .compactMap { $0.time(usingDateTimePair: dateTimePair) }
+            .map { currentItem.percentageComplete(forPlaybackTime: $0) }
     }
 }
 
