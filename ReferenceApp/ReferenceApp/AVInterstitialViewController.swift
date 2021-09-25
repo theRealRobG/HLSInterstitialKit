@@ -77,7 +77,7 @@ class AVInterstitialViewController: UIViewController {
         if isVOD {
             let event = advertService.getAVInterstitialEvent(
                 primaryItem: item,
-                forTime: 10,
+                forTime: 100,
                 forDuration: 30,
                 resumeOffset: .zero
             )
