@@ -19,17 +19,7 @@ class CustomPlayerViewController: UIViewController, PlayerViewControllerJumpCont
         }
         didSet {
             playerView.playerLayer.player = player
-            player.map {
-                setUp(player: $0)
-                playerCueMarkerObserver = PlayerCueMarkerObserver(player: $0)
-                playerCueMarkerObserver?.delegate = self
-                currentItemObservation = player?.observe(\.currentItem) { [weak self] _, _ in
-                    guard let self = self, let currentItem = self.player?.currentItem else { return }
-                    self.seekableRangesObservation = currentItem.observe(\.seekableTimeRanges) { [weak self] _, _ in
-                        self?.updateCuePoints(cueTimes: self?.playerCueMarkerObserver?.cueTimes ?? [])
-                    }
-                }
-            }
+            player.map { setUp(player: $0) }
             updateCuePoints(cueTimes: playerCueMarkerObserver?.cueTimes ?? [])
         }
     }
@@ -155,6 +145,16 @@ class CustomPlayerViewController: UIViewController, PlayerViewControllerJumpCont
                 self?.setPlaybackControlsVisibility()
             }
         }
+        playerCueMarkerObserver = PlayerCueMarkerObserver(player: player)
+        playerCueMarkerObserver?.delegate = self
+        let itemChangedCompletion = { [weak self] in
+            guard let self = self, let currentItem = self.player?.currentItem else { return }
+            self.seekableRangesObservation = currentItem.observe(\.seekableTimeRanges) { [weak self] _, _ in
+                self?.updateCuePoints(cueTimes: self?.playerCueMarkerObserver?.cueTimes ?? [])
+            }
+        }
+        currentItemObservation = player.observe(\.currentItem) { _, _ in itemChangedCompletion() }
+        itemChangedCompletion()
     }
     
     private func setPlaybackControlsVisibility() {
