@@ -11,7 +11,7 @@ import AVKit
 
 struct PlayerFactory {
     let vodURL = URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevc/master.m3u8")!
-    let liveURL = URL(string: "https://live.unified-streaming.com/scte35/scte35.isml/master.m3u8?hls_fmp4")!
+    let liveURL = URL(string: "https://demo.unified-streaming.com/k8s/live/stable/scte35.isml/master.m3u8?hls_fmp4")!
     
     func makeVOD(playerType: PlayerViewControllerType) -> PlayerViewController {
         make(asset: AVURLAsset(url: vodURL), playerType: playerType)
