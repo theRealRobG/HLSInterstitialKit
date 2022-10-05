@@ -11,10 +11,12 @@ class MediaPlaylistManipulator {
     func manipulate(
         playlist: inout HLSPlaylist,
         initialInterstitials: [HLSInterstitialInitialEvent],
+        preRollInterstitials: [HLSInterstitialEvent],
         completion: @escaping (Result<Data, HLSInterstitialError>) -> Void
     ) {
         playlist.convertURLsFromInterstitialScheme()
         addInterstitialsForVOD(playlist: &playlist, interstitials: initialInterstitials)
+        addInterstitialsForPreRollLive(playlist: &playlist, interstitials: preRollInterstitials)
         addInterstitialsForLive(playlist: &playlist, completion: completion)
     }
     
@@ -43,6 +45,13 @@ class MediaPlaylistManipulator {
             tags: [pdt] + dateRangeTags,
             atIndex: playlist.header?.endIndex ?? 0
         )
+    }
+
+    private func addInterstitialsForPreRollLive(playlist: inout HLSPlaylist, interstitials: [HLSInterstitialEvent]) {
+        let events = interstitials.filter { $0.cue.contains(.joinCue) }
+        let tags = events.flatMap { $0.dateRangeTags(forDate: Date(timeIntervalSince1970: 0)) }
+        guard let insertionIndex = playlist.mediaSegmentGroups.first?.startIndex else { return }
+        playlist.insert(tags: tags, atIndex: insertionIndex)
     }
     
     private func addInterstitialsForLive(playlist: inout HLSPlaylist, completion: @escaping (Result<Data, HLSInterstitialError>) -> Void) {

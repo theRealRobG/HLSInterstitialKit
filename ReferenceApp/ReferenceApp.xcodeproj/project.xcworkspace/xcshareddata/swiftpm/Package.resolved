@@ -2,15 +2,6 @@
   "object": {
     "pins": [
       {
-        "package": "BitByteData",
-        "repositoryURL": "https://github.com/tsolomko/BitByteData.git",
-        "state": {
-          "branch": null,
-          "revision": "3ee55b113ae52d5c1f4cbec0ed4eae613dcd7eff",
-          "version": "1.4.3"
-        }
-      },
-      {
         "package": "mamba",
         "repositoryURL": "https://github.com/comcast/mamba.git",
         "state": {
@@ -24,8 +15,8 @@
         "repositoryURL": "https://github.com/theRealRobG/SCTE35Parser.git",
         "state": {
           "branch": null,
-          "revision": "7babc5f355c145dc8c2ac1922335a3cf14a48f44",
-          "version": "0.1.0"
+          "revision": "194170ff9631b0a55bd109fbbb76fe98f5eb10e7",
+          "version": "0.3.1"
         }
       }
     ]

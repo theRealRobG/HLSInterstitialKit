@@ -25,6 +25,7 @@ class HLSInterstitialPlaylistLoader {
         forRequest request: URLRequest,
         interstitialURL: URL,
         initialInterstitials: [HLSInterstitialInitialEvent],
+        preRollInterstitials: [HLSInterstitialEvent],
         completion: @escaping (Result<Data, HLSInterstitialError>) -> Void
     ) {
         var updatedRequest = request
@@ -46,6 +47,7 @@ class HLSInterstitialPlaylistLoader {
                 playlistData: playlistData,
                 url: url,
                 initialInterstitials: initialInterstitials,
+                preRollInterstitials: preRollInterstitials,
                 completion: completion
             )
         }
@@ -55,6 +57,7 @@ class HLSInterstitialPlaylistLoader {
         playlistData originalPlaylistData: Data,
         url: URL,
         initialInterstitials: [HLSInterstitialInitialEvent],
+        preRollInterstitials: [HLSInterstitialEvent],
         completion: @escaping (Result<Data, HLSInterstitialError>) -> Void
     ) {
         do {
@@ -73,6 +76,7 @@ class HLSInterstitialPlaylistLoader {
                 mediaPlaylistManipulator.manipulate(
                     playlist: &playlist,
                     initialInterstitials: initialInterstitials,
+                    preRollInterstitials: preRollInterstitials,
                     completion: completion
                 )
             }

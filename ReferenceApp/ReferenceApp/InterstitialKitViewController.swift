@@ -16,13 +16,15 @@ class InterstitialKitViewController: UIViewController {
             startTime: 10
         )
     }
+    var preRolls: HLSInterstitialEvent {
+        advertService.getInterstitialPreRoll()
+    }
     #if os(iOS)
     @IBOutlet weak var playerControllerPicker: UIPickerView!
     #endif
 
     private let advertService = AdvertService()
     private let playerFactory = PlayerFactory()
-    private var eventObserver: HLSInterstitialAssetEventObserver?
     
     @IBAction func onPlay(_ sender: Any) {
         play(url: playerFactory.vodURL)
@@ -41,13 +43,14 @@ class InterstitialKitViewController: UIViewController {
     }
     
     func play(url: URL) {
-        let asset = HLSInterstitialAsset(url: url, initialEvents: [interstitial])
-        eventObserver = HLSInterstitialAssetEventObserver(asset: asset)
-        eventObserver?.delegate = self
+        let asset = HLSInterstitialAsset(url: url, initialEvents: [interstitial], preRollInterstitials: [preRolls])
+        asset.delegate = self
         #if os(iOS)
         let playerController = playerFactory.make(
             asset: asset,
-            playerType: PlayerFactory.PlayerViewControllerType(rawValue: playerControllerPicker.selectedRow(inComponent: 0)) ?? .avKit
+            playerType: PlayerFactory.PlayerViewControllerType(
+                rawValue: playerControllerPicker.selectedRow(inComponent: 0)
+            ) ?? .avKit
         )
         #else
         let playerController = playerFactory.make(asset: asset, playerType: .avKit)
@@ -57,9 +60,9 @@ class InterstitialKitViewController: UIViewController {
     }
 }
 
-extension InterstitialKitViewController: HLSInterstitialAssetEventObserverDelegate {
-    func interstitialAssetEventObserver(
-        _ observer: HLSInterstitialAssetEventObserver,
+extension InterstitialKitViewController: HLSInterstitialAssetDelegate {
+    func interstitialAsset(
+        _ asset: HLSInterstitialAsset,
         shouldWaitForLoadingOfRequest request: HLSInterstitialEventLoadingRequest
     ) -> Bool {
         let events = request.parameters.reduce(into: [HLSInterstitialEventLoadingRequest.Parameters: HLSInterstitialEvent]()) { results, parameters in

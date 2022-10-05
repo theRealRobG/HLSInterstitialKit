@@ -6,28 +6,37 @@ public struct HLSInterstitialEvent {
     public let id: String
     /// Each value in the array is an absolute URL for a single interstitial asset.
     public let urls: [URL]
-    /// Specifies where primary playback should resume following the playback of the interstitial. It is expressed as a time offset from
-    /// where the interstitial playback was scheduled on the primary player timeline. A typical value is `.zero`. If the
-    /// `resumeOffset` is not present, the player uses the duration of interstitial playback for the resume offset, which is
-    /// appropriate for live playback where playback is to be kept at a constant delay from the live edge, or for VOD playback where
-    /// the HLS interstitial is intended to replace content in the primary asset.
+    /// Specifies where primary playback should resume following the playback of the interstitial.
+    ///
+    /// It is expressed as a time offset from where the interstitial playback was scheduled on the primary player
+    /// timeline. A typical value is `.zero`. If the `resumeOffset` is not present, the player uses the duration of
+    /// interstitial playback for the resume offset, which is appropriate for live playback where playback is to be kept
+    /// at a constant delay from the live edge, or for VOD playback where the HLS interstitial is intended to replace
+    /// content in the primary asset.
     public let resumeOffset: TimeInterval?
-    /// Indicates rules on where the interstitial should snap to within the primary content (see
-    /// [HLSInterstitialSnap](x-source-tag://HLSInterstitialSnap) for available options).
+    /// Indicates rules on where the interstitial should snap to within the primary content.
+    ///
+    /// See [HLSInterstitialSnap](x-source-tag://HLSInterstitialSnap) for available options.
     public let snap: HLSInterstitialSnap
-    /// Specifies a limit for the playout time of the entire interstitial. If it is present, the player should end the interstitial if playback
-    /// reaches that offset from its start. Otherwise the interstitial should end upon reaching the end of the interstitial asset(s).
+    /// Specifies a limit for the playout time of the entire interstitial.
+    ///
+    /// If it is present, the player should end the interstitial if playback reaches that offset from its start.
+    /// Otherwise the interstitial should end upon reaching the end of the interstitial asset(s).
     public let playoutDurationLimit: TimeInterval?
-    /// Specifies the restrictions that should apply to this interstitial (see
-    /// [HLSInterstitialRestrictions](x-source-tag://HLSInterstitialRestrictions) for available restrictions).
+    /// Specifies the restrictions that should apply to this interstitial.
+    ///
+    /// See [HLSInterstitialRestrictions](x-source-tag://HLSInterstitialRestrictions) for available restrictions.
     public let restrictions: HLSInterstitialRestrictions
+    /// A cue to schedule interstitial event playback at a predefined position during primary playback.
+    public let cue: Cue
     
     public init(
         urls: [URL],
         resumeOffset: TimeInterval? = nil,
         snap: HLSInterstitialSnap = [],
         playoutDurationLimit: TimeInterval? = nil,
-        restrictions: HLSInterstitialRestrictions = []
+        restrictions: HLSInterstitialRestrictions = [],
+        cue: Cue = .noCue
     ) {
         self.id = UUID().uuidString
         self.urls = urls
@@ -35,6 +44,7 @@ public struct HLSInterstitialEvent {
         self.snap = snap
         self.playoutDurationLimit = playoutDurationLimit
         self.restrictions = restrictions
+        self.cue = cue
     }
     
     init(
@@ -43,7 +53,8 @@ public struct HLSInterstitialEvent {
         resumeOffset: TimeInterval? = nil,
         snap: HLSInterstitialSnap = [],
         playoutDurationLimit: TimeInterval? = nil,
-        restrictions: HLSInterstitialRestrictions = []
+        restrictions: HLSInterstitialRestrictions = [],
+        cue: Cue = .noCue
     ) {
         self.id = id
         self.urls = urls
@@ -51,6 +62,7 @@ public struct HLSInterstitialEvent {
         self.snap = snap
         self.playoutDurationLimit = playoutDurationLimit
         self.restrictions = restrictions
+        self.cue = cue
     }
 }
 
@@ -91,6 +103,23 @@ extension HLSInterstitialEvent {
                 }
                 parsedValues["X-RESTRICT"] = StringConvertibleHLSValueData(value: stringList.joined(separator: ","), quoteEscaped: true)
             }
+            if !cue.isEmpty {
+                var stringList = [String]()
+                if !cue.contains(.noCue) {
+                    if cue.contains(.joinCue) {
+                        stringList.append("PRE")
+                    }
+                    if cue.contains(.leaveCue) {
+                        stringList.append("POST")
+                    }
+                }
+                if !stringList.isEmpty {
+                    parsedValues["CUE"] = StringConvertibleHLSValueData(
+                        value: stringList.joined(separator: ","),
+                        quoteEscaped: true
+                    )
+                }
+            }
             let tag = HLSTag(
                 tagDescriptor: PantosTag.EXT_X_DATERANGE,
                 tagData: HLSStringRef(string: parsedValues.reduce("") { "\($0)\($0.isEmpty ? "" : ",")\($1.0)=\($1.1)" }),
@@ -98,6 +127,26 @@ extension HLSInterstitialEvent {
                 parsedValues: parsedValues.hlsTagDictionary
             )
             tags.append(tag)
+        }
+    }
+}
+
+public extension HLSInterstitialEvent {
+    /// A structure that defines standard cues to play interstitial content.
+    struct Cue: OptionSet {
+        /// A cue that indicates that playback starts at the interstitial event time or date.
+        public static let noCue = Self(rawValue: 1 << 0)
+        /// A cue that indicates that playback occurs before starting primary playback, regardless of initial primary
+        /// playback position.
+        public static let joinCue = Self(rawValue: 1 << 1)
+        /// A cue that indicates event playback occurs after primary playback ends without error, either at the end of
+        /// the primary asset or at the client-specified forward playback end time.
+        public static let leaveCue = Self(rawValue: 1 << 2)
+
+        public let rawValue: Int
+
+        public init(rawValue: Int) {
+            self.rawValue = rawValue
         }
     }
 }

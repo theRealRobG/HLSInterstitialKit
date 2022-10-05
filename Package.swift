@@ -20,7 +20,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/theRealRobG/SCTE35Parser.git",
-            .exact(Version(0, 1, 0))
+            .upToNextMinor(from: Version(0, 3, 1))
         )
     ],
     targets: [
