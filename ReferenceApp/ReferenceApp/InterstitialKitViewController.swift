@@ -25,7 +25,6 @@ class InterstitialKitViewController: UIViewController {
 
     private let advertService = AdvertService()
     private let playerFactory = PlayerFactory()
-    private var eventObserver: HLSInterstitialAssetEventObserver?
     
     @IBAction func onPlay(_ sender: Any) {
         play(url: playerFactory.vodURL)
@@ -45,8 +44,7 @@ class InterstitialKitViewController: UIViewController {
     
     func play(url: URL) {
         let asset = HLSInterstitialAsset(url: url, initialEvents: [interstitial], preRollInterstitials: [preRolls])
-        eventObserver = HLSInterstitialAssetEventObserver(asset: asset)
-        eventObserver?.delegate = self
+        asset.delegate = self
         #if os(iOS)
         let playerController = playerFactory.make(
             asset: asset,
@@ -62,9 +60,9 @@ class InterstitialKitViewController: UIViewController {
     }
 }
 
-extension InterstitialKitViewController: HLSInterstitialAssetEventObserverDelegate {
+extension InterstitialKitViewController: HLSInterstitialAssetDelegate {
     func interstitialAssetEventObserver(
-        _ observer: HLSInterstitialAssetEventObserver,
+        _ asset: HLSInterstitialAsset,
         shouldWaitForLoadingOfRequest request: HLSInterstitialEventLoadingRequest
     ) -> Bool {
         let events = request.parameters.reduce(into: [HLSInterstitialEventLoadingRequest.Parameters: HLSInterstitialEvent]()) { results, parameters in

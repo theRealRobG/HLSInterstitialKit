@@ -2,14 +2,14 @@ import Foundation
 import AVFoundation
 
 public final class HLSInterstitialAsset: AVURLAsset {
+    public weak var delegate: HLSInterstitialAssetDelegate?
+
     private let originalURL: URL
     private let defaultResourceLoaderDelegateQueue = DispatchQueue(
         label: "com.hlsinterstitialkit.hlsinterstitialasset.default-resource-loader-delegate-queue",
         qos: .userInteractive
     )
     private let resourceLoaderDelegate: HLSInterstitialAssetResourceLoaderDelegate
-    @WeakArray
-    private var eventObservers = [HLSInterstitialAssetEventObserver]()
     
     public override init(url: URL, options: [String: Any]? = nil) {
         self.originalURL = url
@@ -54,19 +54,10 @@ public final class HLSInterstitialAsset: AVURLAsset {
             return
         }
     }
-    
-    func add(observer: HLSInterstitialAssetEventObserver) {
-        guard !eventObservers.contains(where: { $0 === observer }) else { return }
-        eventObservers.append(observer)
-    }
-    
-    func remove(observer: HLSInterstitialAssetEventObserver) {
-        eventObservers.removeAll(where: { $0 === observer })
-    }
 }
 
 extension HLSInterstitialAsset: HLSInterstitialEventLoadingRequestDecisionHandler {
     func shouldWaitForLoadingOfRequest(_ request: HLSInterstitialEventLoadingRequest) -> Bool {
-        return eventObservers.reduce(false) { $0 || $1.shouldWaitForLoadingOfRequest(request) }
+        return delegate?.interstitialAssetEventObserver(self, shouldWaitForLoadingOfRequest: request) ?? false
     }
 }
