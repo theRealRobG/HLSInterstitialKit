@@ -61,7 +61,7 @@ class InterstitialKitViewController: UIViewController {
 }
 
 extension InterstitialKitViewController: HLSInterstitialAssetDelegate {
-    func interstitialAssetEventObserver(
+    func interstitialAsset(
         _ asset: HLSInterstitialAsset,
         shouldWaitForLoadingOfRequest request: HLSInterstitialEventLoadingRequest
     ) -> Bool {

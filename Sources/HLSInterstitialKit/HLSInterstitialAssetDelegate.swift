@@ -1,7 +1,7 @@
 import Foundation
 
 public protocol HLSInterstitialAssetDelegate: AnyObject {
-    func interstitialAssetEventObserver(
+    func interstitialAsset(
         _ asset: HLSInterstitialAsset,
         shouldWaitForLoadingOfRequest request: HLSInterstitialEventLoadingRequest
     ) -> Bool

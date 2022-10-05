@@ -58,6 +58,6 @@ public final class HLSInterstitialAsset: AVURLAsset {
 
 extension HLSInterstitialAsset: HLSInterstitialEventLoadingRequestDecisionHandler {
     func shouldWaitForLoadingOfRequest(_ request: HLSInterstitialEventLoadingRequest) -> Bool {
-        return delegate?.interstitialAssetEventObserver(self, shouldWaitForLoadingOfRequest: request) ?? false
+        return delegate?.interstitialAsset(self, shouldWaitForLoadingOfRequest: request) ?? false
     }
 }
