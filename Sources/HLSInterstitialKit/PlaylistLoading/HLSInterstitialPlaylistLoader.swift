@@ -79,8 +79,6 @@ class HLSInterstitialPlaylistLoader {
                     preRollInterstitials: preRollInterstitials,
                     completion: completion
                 )
-                let playlistData = try playlist.write()
-                completion(.success(playlistData))
             }
         } catch {
             guard let interstitialError = error as? HLSInterstitialError else {
