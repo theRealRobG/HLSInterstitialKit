@@ -74,6 +74,7 @@ class AVInterstitialViewController: UIViewController {
         observe(playerItem: item)
         setUpMetadataCollector(forPlayerItem: item)
         let eventController = AVPlayerInterstitialEventController(primaryPlayer: player)
+        eventController.events = [advertService.getAVInterstitialPreRoll(primaryItem: item)]
         if isVOD {
             let event = advertService.getAVInterstitialEvent(
                 primaryItem: item,
@@ -81,7 +82,7 @@ class AVInterstitialViewController: UIViewController {
                 forDuration: 30,
                 resumeOffset: .zero
             )
-            eventController.events = [event]
+            eventController.events.append(event)
         }
         interstitialEventController = eventController
         present(playerController, animated: true) { player.play() }

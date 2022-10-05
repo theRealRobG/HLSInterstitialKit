@@ -28,9 +28,15 @@ public final class HLSInterstitialAsset: AVURLAsset {
         )
     }
     
-    public convenience init(url: URL, options: [String : Any]? = nil, initialEvents: [HLSInterstitialInitialEvent]) {
+    public convenience init(
+        url: URL,
+        options: [String : Any]? = nil,
+        initialEvents: [HLSInterstitialInitialEvent],
+        preRollInterstitials: [HLSInterstitialEvent]
+    ) {
         self.init(url: url, options: options)
         resourceLoaderDelegate.initialEvents = initialEvents
+        resourceLoaderDelegate.preRollInterstitials = preRollInterstitials
     }
     
     override public func observeValue(

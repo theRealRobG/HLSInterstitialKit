@@ -15,6 +15,19 @@ class AdvertService {
         URL(string: "https://mssl.fwmrm.net/m/1/169843/59/6662075/YVWF0614000H_ENT_MEZZ_HULU_1925786_646/master_cmaf.m3u8")!,
         URL(string: "https://mssl.fwmrm.net/m/1/169843/17/6662161/SBON9969000H_ENT_MEZZ_HULU_1925782_646/master_cmaf.m3u8")!
     ]
+    private let preRollURLs = [
+        URL(string: "https://akam.daps.nbcuni.com/m/1/169843/104/11614952/030G831NBC11021H_ENT_MEZZ_HULU_3318615_730/master_cmaf.m3u8")!,
+        URL(string: "https://akam.daps.nbcuni.com/m/1/169843/19/11616659/015K831ANW12021H_ENT_MEZZ_HULU_3318934_730/master_cmaf.m3u8")!,
+        URL(string: "https://akam.daps.nbcuni.com/m/1/169843/71/11616583/015K601GON12021H_ENT_MEZZ_HULU_3318920_730/master_cmaf.m3u8")!
+    ]
+
+    func getInterstitialPreRoll() -> HLSInterstitialEvent {
+        HLSInterstitialEvent(
+            urls: preRollURLs,
+            restrictions: [.restrictJump, .restrictSkip],
+            cue: .joinCue
+        )
+    }
     
     func getInterstitialEvent(forDuration duration: TimeInterval, resumeOffset: TimeInterval? = nil) -> HLSInterstitialEvent {
         HLSInterstitialEvent(
@@ -54,6 +67,19 @@ class AdvertService {
             restrictions: [.constrainsSeekingForwardInPrimaryContent, .requiresPlaybackAtPreferredRateForAdvancement],
             resumptionOffset: resumeOffset.map { CMTime(seconds: $0, preferredTimescale: 1) } ?? .indefinite
         )
+    }
+
+    func getAVInterstitialPreRoll(primaryItem: AVPlayerItem) -> AVPlayerInterstitialEvent {
+        let event = AVPlayerInterstitialEvent(
+            primaryItem: primaryItem,
+            identifier: "Interstitial PreRoll Event",
+            time: .zero,
+            templateItems: preRollURLs.map { AVPlayerItem(url: $0) }
+        )
+        if #available(iOS 16, tvOS 16, *) {
+            event.cue = .joinCue
+        }
+        return event
     }
     
     private func getAdURLs(forDuration duration: TimeInterval) -> [URL] {

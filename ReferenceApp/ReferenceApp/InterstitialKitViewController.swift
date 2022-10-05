@@ -16,6 +16,9 @@ class InterstitialKitViewController: UIViewController {
             startTime: 10
         )
     }
+    var preRolls: HLSInterstitialEvent {
+        advertService.getInterstitialPreRoll()
+    }
     #if os(iOS)
     @IBOutlet weak var playerControllerPicker: UIPickerView!
     #endif
@@ -41,13 +44,15 @@ class InterstitialKitViewController: UIViewController {
     }
     
     func play(url: URL) {
-        let asset = HLSInterstitialAsset(url: url, initialEvents: [interstitial])
+        let asset = HLSInterstitialAsset(url: url, initialEvents: [interstitial], preRollInterstitials: [preRolls])
         eventObserver = HLSInterstitialAssetEventObserver(asset: asset)
         eventObserver?.delegate = self
         #if os(iOS)
         let playerController = playerFactory.make(
             asset: asset,
-            playerType: PlayerFactory.PlayerViewControllerType(rawValue: playerControllerPicker.selectedRow(inComponent: 0)) ?? .avKit
+            playerType: PlayerFactory.PlayerViewControllerType(
+                rawValue: playerControllerPicker.selectedRow(inComponent: 0)
+            ) ?? .avKit
         )
         #else
         let playerController = playerFactory.make(asset: asset, playerType: .avKit)

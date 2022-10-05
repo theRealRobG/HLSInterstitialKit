@@ -11,6 +11,7 @@ class HLSInterstitialAssetResourceLoaderDelegate: NSObject, AVAssetResourceLoade
     
     let playlistLoader: HLSInterstitialPlaylistLoader
     var initialEvents = [HLSInterstitialInitialEvent]()
+    var preRollInterstitials = [HLSInterstitialEvent]()
 
     init(playlistLoader: HLSInterstitialPlaylistLoader = HLSInterstitialPlaylistLoader()) {
         self.playlistLoader = playlistLoader
@@ -34,7 +35,8 @@ class HLSInterstitialAssetResourceLoaderDelegate: NSObject, AVAssetResourceLoade
             playlistLoader.loadPlaylist(
                 forRequest: loadingRequest.request,
                 interstitialURL: url,
-                initialInterstitials: initialEvents
+                initialInterstitials: initialEvents,
+                preRollInterstitials: preRollInterstitials
             ) { result in
                 switch result {
                 case .success(let playlistData):
