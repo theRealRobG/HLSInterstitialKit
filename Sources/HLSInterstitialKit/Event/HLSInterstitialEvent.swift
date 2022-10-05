@@ -113,7 +113,12 @@ extension HLSInterstitialEvent {
                         stringList.append("POST")
                     }
                 }
-                parsedValues["CUE"] = StringConvertibleHLSValueData(value: stringList.joined(separator: ","), quoteEscaped: true)
+                if !stringList.isEmpty {
+                    parsedValues["CUE"] = StringConvertibleHLSValueData(
+                        value: stringList.joined(separator: ","),
+                        quoteEscaped: true
+                    )
+                }
             }
             let tag = HLSTag(
                 tagDescriptor: PantosTag.EXT_X_DATERANGE,
