@@ -24,9 +24,7 @@ class HLSInterstitialPlaylistLoader {
     func loadPlaylist(
         forRequest request: URLRequest,
         interstitialURL: URL,
-        initialInterstitials: [HLSInterstitialInitialEvent],
-        preRollInterstitials: [HLSInterstitialEvent],
-        completion: @escaping (Result<Data, HLSInterstitialError>) -> Void
+        completion: @escaping (Result<Data, Error>) -> Void
     ) {
         var updatedRequest = request
         let url = interstitialURL.fromInterstitialURL()
@@ -38,53 +36,51 @@ class HLSInterstitialPlaylistLoader {
                 return completion(.failure(error))
             case .success(let response):
                 guard let data = response.data else {
-                    let errorDetails = UnexpectedEmptyResponseErrorDetails(requestURL: url, responseStatusCode: response.statusCode)
-                    return completion(.failure(.networkError(.unexpectedEmptyResponse(errorDetails))))
+                    let errorDetails = UnexpectedEmptyResponseErrorDetails(
+                        requestURL: url,
+                        responseStatusCode: response.statusCode
+                    )
+                    return completion(
+                        .failure(HLSInterstitialError.networkError(.unexpectedEmptyResponse(errorDetails)))
+                    )
                 }
                 playlistData = data
             }
-            self?.manipulate(
-                playlistData: playlistData,
-                url: url,
-                initialInterstitials: initialInterstitials,
-                preRollInterstitials: preRollInterstitials,
-                completion: completion
-            )
+            Task { [weak self] in
+                guard let self = self else { return completion(.failure(CancellationError())) }
+                do {
+                    let data = try await self.manipulate(
+                        playlistData: playlistData,
+                        url: url
+                    )
+                    completion(.success(data))
+                } catch {
+                    completion(.failure(error))
+                }
+            }
         }
     }
 
-    func manipulate(
-        playlistData originalPlaylistData: Data,
-        url: URL,
-        initialInterstitials: [HLSInterstitialInitialEvent],
-        preRollInterstitials: [HLSInterstitialEvent],
-        completion: @escaping (Result<Data, HLSInterstitialError>) -> Void
-    ) {
+    func manipulate(playlistData originalPlaylistData: Data, url: URL) async throws -> Data {
         do {
             var playlist = try hlsParser.parse(playlistData: originalPlaylistData, url: url)
 
             switch playlist.type {
             case .unknown:
-                completion(.success(originalPlaylistData))
+                return originalPlaylistData
 
             case .master:
                 playlist.convertURLsToInterstitialScheme()
-                let playlistData = try playlist.write()
-                completion(.success(playlistData))
+                return try playlist.write()
 
             case .media:
-                mediaPlaylistManipulator.manipulate(
-                    playlist: &playlist,
-                    initialInterstitials: initialInterstitials,
-                    preRollInterstitials: preRollInterstitials,
-                    completion: completion
-                )
+                return try await mediaPlaylistManipulator.manipulate(playlist: &playlist)
             }
         } catch {
             guard let interstitialError = error as? HLSInterstitialError else {
-                return completion(.failure(.playlistParseError(PlaylistParseError(error))))
+                throw HLSInterstitialError.playlistParseError(PlaylistParseError(error))
             }
-            completion(.failure(interstitialError))
+            throw interstitialError
         }
     }
 }

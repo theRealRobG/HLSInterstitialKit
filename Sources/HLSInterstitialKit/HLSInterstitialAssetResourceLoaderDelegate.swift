@@ -10,8 +10,6 @@ class HLSInterstitialAssetResourceLoaderDelegate: NSObject, AVAssetResourceLoade
     }
     
     let playlistLoader: HLSInterstitialPlaylistLoader
-    var initialEvents = [HLSInterstitialInitialEvent]()
-    var preRollInterstitials = [HLSInterstitialEvent]()
 
     init(playlistLoader: HLSInterstitialPlaylistLoader = HLSInterstitialPlaylistLoader()) {
         self.playlistLoader = playlistLoader
@@ -32,12 +30,7 @@ class HLSInterstitialAssetResourceLoaderDelegate: NSObject, AVAssetResourceLoade
         shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest
     ) -> Bool {
         if let url = loadingRequest.request.url, url.isInterstitialURL() {
-            playlistLoader.loadPlaylist(
-                forRequest: loadingRequest.request,
-                interstitialURL: url,
-                initialInterstitials: initialEvents,
-                preRollInterstitials: preRollInterstitials
-            ) { result in
+            playlistLoader.loadPlaylist(forRequest: loadingRequest.request, interstitialURL: url) { result in
                 switch result {
                 case .success(let playlistData):
                     loadingRequest.dataRequest?.respond(with: playlistData)
