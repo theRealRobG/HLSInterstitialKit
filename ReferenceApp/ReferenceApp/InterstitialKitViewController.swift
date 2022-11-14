@@ -43,7 +43,7 @@ class InterstitialKitViewController: UIViewController {
     }
     
     func play(url: URL) {
-        let asset = HLSInterstitialAsset(url: url, initialEvents: [interstitial], preRollInterstitials: [preRolls])
+        let asset = HLSInterstitialAsset(url: url)
         asset.delegate = self
         #if os(iOS)
         let playerController = playerFactory.make(
@@ -63,9 +63,53 @@ class InterstitialKitViewController: UIViewController {
 extension InterstitialKitViewController: HLSInterstitialAssetDelegate {
     func interstitialAsset(
         _ asset: HLSInterstitialAsset,
+        shouldWaitForLoadingOfInitialRequest request: HLSInterstitialEventInitialLoadingRequest
+    ) -> Bool {
+        var preRolls = preRolls
+        switch request.playlist.playlistType {
+        case .vod:
+            preRolls = HLSInterstitialEvent(
+                urls: preRolls.urls,
+                resumeOffset: .zero,
+                snap: preRolls.snap,
+                playoutDurationLimit: preRolls.playoutDurationLimit,
+                restrictions: preRolls.restrictions,
+                cue: preRolls.cue
+            )
+        case .event, .live, .unknown:
+            break
+        }
+        let events = getEvents(fromRequestParameters: request.parameters)
+        defer {
+            request.finishLoading(
+                withResult: .success(events),
+                preRollInterstitials: [preRolls],
+                midRollInterstitials: [interstitial]
+            )
+        }
+        return true
+    }
+
+    func interstitialAsset(
+        _ asset: HLSInterstitialAsset,
         shouldWaitForLoadingOfRequest request: HLSInterstitialEventLoadingRequest
     ) -> Bool {
-        let events = request.parameters.reduce(into: [HLSInterstitialEventLoadingRequest.Parameters: HLSInterstitialEvent]()) { results, parameters in
+        let events = getEvents(fromRequestParameters: request.parameters)
+        if events.isEmpty {
+            return false
+        }
+        defer {
+            request.finishLoading(withResult: .success(events))
+        }
+        return true
+    }
+
+    private func getEvents(
+        fromRequestParameters parameters: [HLSInterstitialEventLoadingRequest.Parameters]
+    ) -> [HLSInterstitialEventLoadingRequest.Parameters: HLSInterstitialEvent] {
+        parameters.reduce(
+            into: [HLSInterstitialEventLoadingRequest.Parameters: HLSInterstitialEvent]()
+        ) { results, parameters in
             guard let scteOut = parameters.scte35Out else { return }
             switch scteOut.spliceCommand {
             case .spliceInsert(let spliceInsert):
@@ -77,13 +121,6 @@ extension InterstitialKitViewController: HLSInterstitialAssetDelegate {
                 return
             }
         }
-        if events.isEmpty {
-            return false
-        }
-        defer {
-            request.finishLoading(withResult: .success(events))
-        }
-        return true
     }
 }
 

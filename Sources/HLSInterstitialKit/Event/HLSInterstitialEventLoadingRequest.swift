@@ -2,10 +2,17 @@ import Foundation
 import mamba
 import SCTE35Parser
 
+public typealias HLSInterstitialEventLoadingRequestResult = Result<
+    [HLSInterstitialEventLoadingRequest.Parameters: HLSInterstitialEvent?],
+    Error
+>
+
 protocol HLSInterstitialEventLoadingRequestDelegate: AnyObject {
     func interstitialEventLoadingRequest(
         _ request: HLSInterstitialEventLoadingRequest,
-        didFinishLoadingWithResult result: Result<[HLSInterstitialEventLoadingRequest.Parameters: HLSInterstitialEvent], Error>?
+        didFinishLoadingWithResult result: HLSInterstitialEventLoadingRequestResult,
+        preRollInterstitials: [HLSInterstitialEvent],
+        midRollInterstiitals: [HLSInterstitialInitialEvent]
     )
     
     func interstitialEventLoadingRequestDidGetCancelled(
@@ -21,7 +28,7 @@ public class HLSInterstitialEventLoadingRequest: Hashable {
     public let parameters: [Parameters]
     public let playlist: HLSPlaylist
     
-    public private(set) var isFinished = false
+    public fileprivate(set) var isFinished = false
     public private(set) var isCancelled = false
     
     weak var delegate: HLSInterstitialEventLoadingRequestDelegate?
@@ -31,15 +38,24 @@ public class HLSInterstitialEventLoadingRequest: Hashable {
         self.playlist = playlist
     }
     
-    convenience init(parameters: [Parameters], playlist: HLSPlaylist, delegate: HLSInterstitialEventLoadingRequestDelegate) {
+    convenience init(
+        parameters: [Parameters],
+        playlist: HLSPlaylist,
+        delegate: HLSInterstitialEventLoadingRequestDelegate
+    ) {
         self.init(parameters: parameters, playlist: playlist)
         self.delegate = delegate
     }
     
-    public func finishLoading(withResult result: Result<[HLSInterstitialEventLoadingRequest.Parameters: HLSInterstitialEvent], Error>?) {
+    public func finishLoading(withResult result: HLSInterstitialEventLoadingRequestResult) {
         if isCancelled || isFinished { return }
         isFinished = true
-        delegate?.interstitialEventLoadingRequest(self, didFinishLoadingWithResult: result)
+        delegate?.interstitialEventLoadingRequest(
+            self,
+            didFinishLoadingWithResult: result,
+            preRollInterstitials: [],
+            midRollInterstiitals: []
+        )
     }
     
     public func hash(into hasher: inout Hasher) {
@@ -50,6 +66,23 @@ public class HLSInterstitialEventLoadingRequest: Hashable {
         if isCancelled || isFinished { return }
         isCancelled = true
         delegate?.interstitialEventLoadingRequestDidGetCancelled(self)
+    }
+}
+
+public class HLSInterstitialEventInitialLoadingRequest: HLSInterstitialEventLoadingRequest {
+    public func finishLoading(
+        withResult result: HLSInterstitialEventLoadingRequestResult,
+        preRollInterstitials: [HLSInterstitialEvent],
+        midRollInterstitials: [HLSInterstitialInitialEvent]
+    ) {
+        if isCancelled || isFinished { return }
+        isFinished = true
+        delegate?.interstitialEventLoadingRequest(
+            self,
+            didFinishLoadingWithResult: result,
+            preRollInterstitials: preRollInterstitials,
+            midRollInterstiitals: midRollInterstitials
+        )
     }
 }
 

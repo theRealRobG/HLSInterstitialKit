@@ -1,23 +1,25 @@
 import mamba
 
 class MediaPlaylistManipulator {
-    weak var decisionHandler: HLSInterstitialEventLoadingRequestDecisionHandler?
-    
+    weak var decisionHandler: HLSInterstitialEventLoadingRequestDecisionHandler? {
+        get { eventDecisioner.decisionHandler }
+        set { eventDecisioner.decisionHandler = newValue }
+    }
+
+    private let eventDecisioner = HLSInterstitialEventDecisioner()
     private let defaultVODStartDate = Date(timeIntervalSince1970: 0)
-    private var requestedIDs = [String]()
-    private var activeRequest: RequestedEventCompletionInfo?
-    private var idToEventMap = [String: HLSInterstitialEvent]()
     
-    func manipulate(
-        playlist: inout HLSPlaylist,
-        initialInterstitials: [HLSInterstitialInitialEvent],
-        preRollInterstitials: [HLSInterstitialEvent],
-        completion: @escaping (Result<Data, HLSInterstitialError>) -> Void
-    ) {
+    func manipulate(playlist: inout HLSPlaylist) async throws -> Data {
         playlist.convertURLsFromInterstitialScheme()
-        addInterstitialsForVOD(playlist: &playlist, interstitials: initialInterstitials)
-        addInterstitialsForPreRollLive(playlist: &playlist, interstitials: preRollInterstitials)
-        addInterstitialsForLive(playlist: &playlist, completion: completion)
+
+        let requestParameters = getNewRequestParameters(forPlaylist: playlist)
+        let eventsResponse = await eventDecisioner.events(forParameters: requestParameters, playlist: playlist)
+
+        addInterstitialsForVOD(playlist: &playlist, interstitials: eventsResponse.initialInterstitials)
+        addInterstitialsForPreRoll(playlist: &playlist, interstitials: eventsResponse.preRollInterstitials)
+        addInterstitialsForLive(playlist: &playlist, events: eventsResponse.idToEventMap)
+
+        return try playlist.write()
     }
     
     private func addInterstitialsForVOD(playlist: inout HLSPlaylist, interstitials: [HLSInterstitialInitialEvent]) {
@@ -47,35 +49,11 @@ class MediaPlaylistManipulator {
         )
     }
 
-    private func addInterstitialsForPreRollLive(playlist: inout HLSPlaylist, interstitials: [HLSInterstitialEvent]) {
+    private func addInterstitialsForPreRoll(playlist: inout HLSPlaylist, interstitials: [HLSInterstitialEvent]) {
         let events = interstitials.filter { $0.cue.contains(.joinCue) }
         let tags = events.flatMap { $0.dateRangeTags(forDate: Date(timeIntervalSince1970: 0)) }
         guard let insertionIndex = playlist.mediaSegmentGroups.first?.startIndex else { return }
         playlist.insert(tags: tags, atIndex: insertionIndex)
-    }
-    
-    private func addInterstitialsForLive(playlist: inout HLSPlaylist, completion: @escaping (Result<Data, HLSInterstitialError>) -> Void) {
-        let requestParameters = getNewRequestParameters(forPlaylist: playlist)
-        guard let decisionHandler = decisionHandler, !requestParameters.isEmpty else {
-            if let activeRequest = activeRequest {
-                activeRequest.dependents.append(RequestedEventCompletionDependent(playlist: playlist, completion: completion))
-            } else {
-                completeInsertion(playlist: &playlist, completion: completion)
-            }
-            return
-        }
-        if let activeRequest = activeRequest {
-            // If we're still waiting for a previous decision and another one rolls in just drop the previous request.
-            // This is a simplification for now and I suppose should be improved in the future.
-            activeRequest.loadingRequest.cancel()
-        }
-        let eventRequest = HLSInterstitialEventLoadingRequest(parameters: requestParameters, playlist: playlist, delegate: self)
-        activeRequest = RequestedEventCompletionInfo(loadingRequest: eventRequest, completion: completion)
-        guard decisionHandler.shouldWaitForLoadingOfRequest(eventRequest) else {
-            activeRequest = nil
-            completeInsertion(playlist: &playlist, completion: completion)
-            return
-        }
     }
     
     private func addInterstitialsForLive(playlist: inout HLSPlaylist, events: [String: HLSInterstitialEvent]) {
@@ -91,84 +69,13 @@ class MediaPlaylistManipulator {
         }
     }
     
-    private func getNewRequestParameters(forPlaylist playlist: HLSPlaylist) -> [HLSInterstitialEventLoadingRequest.Parameters] {
-        let parameters = playlist.tags
-            .filter { $0.tagDescriptor == PantosTag.EXT_X_DATERANGE && ($0.value(.id).map { id in !requestedIDs.contains(id) } ?? false) }
+    private func getNewRequestParameters(
+        forPlaylist playlist: HLSPlaylist
+    ) -> [String: HLSInterstitialEventLoadingRequest.Parameters] {
+        playlist.tags
+            .filter { $0.tagDescriptor == PantosTag.EXT_X_DATERANGE }
             .compactMap { $0.eventLoadingRequestParameters }
             .combinedRequestParameters()
-        requestedIDs.append(contentsOf: parameters.map { $0.id })
-        return parameters
-    }
-    
-    private func completeInsertion(playlist: inout HLSPlaylist, completion: (Result<Data, HLSInterstitialError>) -> Void) {
-        do {
-            addInterstitialsForLive(playlist: &playlist, events: idToEventMap)
-            let playlistData = try playlist.write()
-            completion(.success(playlistData))
-        } catch {
-            guard let interstitialError = error as? HLSInterstitialError else {
-                return completion(.failure(.playlistParseError(PlaylistParseError(error))))
-            }
-            completion(.failure(interstitialError))
-        }
-    }
-}
-
-extension MediaPlaylistManipulator: HLSInterstitialEventLoadingRequestDelegate {
-    func interstitialEventLoadingRequest(
-        _ request: HLSInterstitialEventLoadingRequest,
-        didFinishLoadingWithResult result: Result<[HLSInterstitialEventLoadingRequest.Parameters: HLSInterstitialEvent], Error>?
-    ) {
-        guard let activeRequest = activeRequest, activeRequest.loadingRequest === request else { return }
-        switch result {
-        case .success(let parameterEventMap):
-            for (parameters, event) in parameterEventMap {
-                idToEventMap[parameters.id] = event
-            }
-        case .failure, .none:
-            break
-        }
-        completeInsertion(requestCompletionInfo: activeRequest)
-    }
-    
-    func interstitialEventLoadingRequestDidGetCancelled(
-        _ request: HLSInterstitialEventLoadingRequest
-    ) {
-        guard let activeRequest = activeRequest, activeRequest.loadingRequest === request else { return }
-        completeInsertion(requestCompletionInfo: activeRequest)
-    }
-    
-    private func completeInsertion(requestCompletionInfo: RequestedEventCompletionInfo) {
-        var playlist = requestCompletionInfo.loadingRequest.playlist
-        requestCompletionInfo.loadingRequest.delegate = nil
-        activeRequest = nil
-        completeInsertion(playlist: &playlist, completion: requestCompletionInfo.completion)
-        for dependent in requestCompletionInfo.dependents {
-            var dependentPlaylist = dependent.playlist
-            completeInsertion(playlist: &dependentPlaylist, completion: dependent.completion)
-        }
-    }
-}
-
-private extension MediaPlaylistManipulator {
-    class RequestedEventCompletionInfo {
-        let loadingRequest: HLSInterstitialEventLoadingRequest
-        let completion: (Result<Data, HLSInterstitialError>) -> Void
-        var dependents: [RequestedEventCompletionDependent]
-        
-        init(
-            loadingRequest: HLSInterstitialEventLoadingRequest,
-            completion: @escaping (Result<Data, HLSInterstitialError>) -> Void,
-            dependents: [RequestedEventCompletionDependent] = []
-        ) {
-            self.loadingRequest = loadingRequest
-            self.completion = completion
-            self.dependents = dependents
-        }
-    }
-    
-    struct RequestedEventCompletionDependent {
-        let playlist: HLSPlaylist
-        let completion: (Result<Data, HLSInterstitialError>) -> Void
+            .reduce(into: [String: HLSInterstitialEventLoadingRequest.Parameters]()) { $0[$1.id] = $1 }
     }
 }
