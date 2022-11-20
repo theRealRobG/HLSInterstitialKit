@@ -69,7 +69,7 @@ extension InterstitialKitViewController: HLSInterstitialAssetDelegate {
         switch request.playlist.playlistType {
         case .vod:
             preRolls = HLSInterstitialEvent(
-                urls: preRolls.urls,
+                assets: preRolls.assets,
                 resumeOffset: .zero,
                 snap: preRolls.snap,
                 playoutDurationLimit: preRolls.playoutDurationLimit,

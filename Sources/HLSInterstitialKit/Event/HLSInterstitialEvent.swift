@@ -4,8 +4,8 @@ import mamba
 public struct HLSInterstitialEvent {
     /// Uniquely identifies a Date Range in the Playlist.
     public let id: String
-    /// Each value in the array is an absolute URL for a single interstitial asset.
-    public let urls: [URL]
+    /// Each value in the array is an absolute URL and duration for a single interstitial asset.
+    public let assets: [Asset]
     /// Specifies where primary playback should resume following the playback of the interstitial.
     ///
     /// It is expressed as a time offset from where the interstitial playback was scheduled on the primary player
@@ -31,7 +31,7 @@ public struct HLSInterstitialEvent {
     public let cue: Cue
     
     public init(
-        urls: [URL],
+        assets: [Asset],
         resumeOffset: TimeInterval? = nil,
         snap: HLSInterstitialSnap = [],
         playoutDurationLimit: TimeInterval? = nil,
@@ -39,7 +39,7 @@ public struct HLSInterstitialEvent {
         cue: Cue = .noCue
     ) {
         self.id = UUID().uuidString
-        self.urls = urls
+        self.assets = assets
         self.resumeOffset = resumeOffset
         self.snap = snap
         self.playoutDurationLimit = playoutDurationLimit
@@ -49,7 +49,7 @@ public struct HLSInterstitialEvent {
     
     init(
         id: String,
-        urls: [URL],
+        assets: [Asset],
         resumeOffset: TimeInterval? = nil,
         snap: HLSInterstitialSnap = [],
         playoutDurationLimit: TimeInterval? = nil,
@@ -57,7 +57,7 @@ public struct HLSInterstitialEvent {
         cue: Cue = .noCue
     ) {
         self.id = id
-        self.urls = urls
+        self.assets = assets
         self.resumeOffset = resumeOffset
         self.snap = snap
         self.playoutDurationLimit = playoutDurationLimit
@@ -68,70 +68,132 @@ public struct HLSInterstitialEvent {
 
 extension HLSInterstitialEvent {
     func dateRangeTags(forDate date: Date) -> [HLSTag] {
-        urls.enumerated().reduce(into: [HLSTag]()) { tags, enumerated in
-            let url = enumerated.element
-            let index = enumerated.offset
-            var parsedValues: OrderedDictionary<String, StringConvertibleHLSValueData> = [
-                "ID": StringConvertibleHLSValueData(value: "\(id)_\(index)", quoteEscaped: true),
-                "START-DATE": StringConvertibleHLSValueData(value: PlaylistDateFormatter.string(from: date), quoteEscaped: true),
-                "CLASS": StringConvertibleHLSValueData(value: "com.apple.hls.interstitial", quoteEscaped: true),
-                "X-ASSET-URI": StringConvertibleHLSValueData(value: url.absoluteString, quoteEscaped: true)
-            ]
-            if let resumeOffset = resumeOffset {
-                parsedValues["X-RESUME-OFFSET"] = StringConvertibleHLSValueData(value: String(resumeOffset), quoteEscaped: false)
-            }
-            if let playoutDurationLimit = playoutDurationLimit {
-                parsedValues["X-PLAYOUT-LIMIT"] = StringConvertibleHLSValueData(value: String(playoutDurationLimit), quoteEscaped: false)
-            }
-            if !snap.isEmpty {
-                var stringList = [String]()
-                if snap.contains(.snapIn) {
-                    stringList.append("IN")
-                }
-                if snap.contains(.snapOut) {
-                    stringList.append("OUT")
-                }
-                parsedValues["X-SNAP"] = StringConvertibleHLSValueData(value: stringList.joined(separator: ","), quoteEscaped: true)
-            }
-            if !restrictions.isEmpty {
-                var stringList = [String]()
-                if restrictions.contains(.restrictJump) {
-                    stringList.append("JUMP")
-                }
-                if restrictions.contains(.restrictSkip) {
-                    stringList.append("SKIP")
-                }
-                parsedValues["X-RESTRICT"] = StringConvertibleHLSValueData(value: stringList.joined(separator: ","), quoteEscaped: true)
-            }
-            if !cue.isEmpty {
-                var stringList = [String]()
-                if !cue.contains(.noCue) {
-                    if cue.contains(.joinCue) {
-                        stringList.append("PRE")
-                    }
-                    if cue.contains(.leaveCue) {
-                        stringList.append("POST")
-                    }
-                }
-                if !stringList.isEmpty {
-                    parsedValues["CUE"] = StringConvertibleHLSValueData(
-                        value: stringList.joined(separator: ","),
-                        quoteEscaped: true
-                    )
-                }
-            }
-            let tag = HLSTag(
-                tagDescriptor: PantosTag.EXT_X_DATERANGE,
-                tagData: HLSStringRef(string: parsedValues.reduce("") { "\($0)\($0.isEmpty ? "" : ",")\($1.0)=\($1.1)" }),
-                tagName: HLSStringRef(descriptor: PantosTag.EXT_X_DATERANGE),
-                parsedValues: parsedValues.hlsTagDictionary
+        if #available(iOS 16.1, tvOS 16.1, *) {
+            var parsedValues = commonParsedValues(forDate: date)
+            parsedValues["ID"] = StringConvertibleHLSValueData(value: id, quoteEscaped: true)
+            parsedValues["X-ASSET-LIST"] = StringConvertibleHLSValueData(
+                value: URL.assetListBaseURL
+                    .appending(queryItems: [URLQueryItem(name: "_HLS_interstitial_id", value: id)])
+                    .absoluteString,
+                quoteEscaped: true
             )
-            tags.append(tag)
+            return [tag(fromParsedValues: parsedValues)]
+        } else {
+            return assets.map { $0.url }.enumerated().reduce(into: [HLSTag]()) { tags, enumerated in
+                let url = enumerated.element
+                let index = enumerated.offset
+                var parsedValues = commonParsedValues(forDate: date)
+                parsedValues["ID"] = StringConvertibleHLSValueData(value: "\(id)_\(index)", quoteEscaped: true)
+                parsedValues["X-ASSET-URI"] = StringConvertibleHLSValueData(
+                    value: url.absoluteString,
+                    quoteEscaped: true
+                )
+                let tag = tag(fromParsedValues: parsedValues)
+                tags.append(tag)
+            }
         }
+    }
+
+    private func commonParsedValues(forDate date: Date) -> OrderedDictionary<String, StringConvertibleHLSValueData> {
+        var parsedValues: OrderedDictionary<String, StringConvertibleHLSValueData> = [
+            "START-DATE": StringConvertibleHLSValueData(
+                value: PlaylistDateFormatter.string(from: date),
+                quoteEscaped: true
+            ),
+            "CLASS": StringConvertibleHLSValueData(value: "com.apple.hls.interstitial", quoteEscaped: true)
+        ]
+        if let resumeOffset = resumeOffset {
+            parsedValues["X-RESUME-OFFSET"] = StringConvertibleHLSValueData(
+                value: String(resumeOffset),
+                quoteEscaped: false
+            )
+        }
+        if let playoutDurationLimit = playoutDurationLimit {
+            parsedValues["X-PLAYOUT-LIMIT"] = StringConvertibleHLSValueData(
+                value: String(playoutDurationLimit),
+                quoteEscaped: false
+            )
+        }
+        if !snap.isEmpty {
+            var stringList = [String]()
+            if snap.contains(.snapIn) {
+                stringList.append("IN")
+            }
+            if snap.contains(.snapOut) {
+                stringList.append("OUT")
+            }
+            parsedValues["X-SNAP"] = StringConvertibleHLSValueData(
+                value: stringList.joined(separator: ","),
+                quoteEscaped: true
+            )
+        }
+        if !restrictions.isEmpty {
+            var stringList = [String]()
+            if restrictions.contains(.restrictJump) {
+                stringList.append("JUMP")
+            }
+            if restrictions.contains(.restrictSkip) {
+                stringList.append("SKIP")
+            }
+            parsedValues["X-RESTRICT"] = StringConvertibleHLSValueData(
+                value: stringList.joined(separator: ","),
+                quoteEscaped: true
+            )
+        }
+        if !cue.isEmpty {
+            var stringList = [String]()
+            if !cue.contains(.noCue) {
+                if cue.contains(.joinCue) {
+                    stringList.append("PRE")
+                }
+                if cue.contains(.leaveCue) {
+                    stringList.append("POST")
+                }
+            }
+            if !stringList.isEmpty {
+                parsedValues["CUE"] = StringConvertibleHLSValueData(
+                    value: stringList.joined(separator: ","),
+                    quoteEscaped: true
+                )
+            }
+        }
+        return parsedValues
+    }
+
+    private func tag(
+        fromParsedValues parsedValues: OrderedDictionary<String, StringConvertibleHLSValueData>
+    ) -> HLSTag {
+        HLSTag(
+            tagDescriptor: PantosTag.EXT_X_DATERANGE,
+            tagData: HLSStringRef(string: parsedValues.reduce("") { "\($0)\($0.isEmpty ? "" : ",")\($1.0)=\($1.1)" }),
+            tagName: HLSStringRef(descriptor: PantosTag.EXT_X_DATERANGE),
+            parsedValues: parsedValues.hlsTagDictionary
+        )
     }
 }
 
 public extension HLSInterstitialEvent {
+    struct Asset: Encodable {
+        public let url: URL
+        public let duration: TimeInterval
+
+        public init(url: URL, duration: TimeInterval) {
+            self.url = url
+            self.duration = duration
+        }
+
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(url, forKey: .url)
+            try container.encode(duration, forKey: .duration)
+        }
+
+        enum CodingKeys: String, CodingKey {
+            case url = "URI"
+            case duration = "DURATION"
+        }
+    }
+
     /// A structure that defines standard cues to play interstitial content.
     struct Cue: OptionSet {
         /// A cue that indicates that playback starts at the interstitial event time or date.

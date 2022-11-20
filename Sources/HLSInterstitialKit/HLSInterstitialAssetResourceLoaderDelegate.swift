@@ -30,6 +30,18 @@ class HLSInterstitialAssetResourceLoaderDelegate: NSObject, AVAssetResourceLoade
         shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest
     ) -> Bool {
         if let url = loadingRequest.request.url, url.isInterstitialURL() {
+            if url.isAssetListURL {
+                playlistLoader.loadAssetListResponse(url: url) { result in
+                    switch result {
+                    case .success(let assetListData):
+                        loadingRequest.dataRequest?.respond(with: assetListData)
+                        loadingRequest.finishLoading()
+                    case .failure(let error):
+                        loadingRequest.finishLoading(with: error)
+                    }
+                }
+                return true
+            }
             playlistLoader.loadPlaylist(forRequest: loadingRequest.request, interstitialURL: url) { result in
                 switch result {
                 case .success(let playlistData):
