@@ -5,6 +5,8 @@ protocol EventDecisioner {
         forParameters parameters: [String: HLSInterstitialEventLoadingRequest.Parameters],
         playlist: HLSPlaylist
     ) async -> EventsResponse
+
+    func event(forId id: String) async -> HLSInterstitialEvent?
 }
 
 struct EventsResponse {
@@ -15,8 +17,9 @@ struct EventsResponse {
 
 /// Provides a wrapper around the decisioning actor
 ///
-/// Since we need to keep a single reference for event decisions across all media playlists, and actors are value types,
-/// we need to wrap the actor in a reference type in order to provide the same actor for all media decisions.
+/// Actor types are reference types so we don't technically need to wrap the actor in a class; however, this class still
+/// has usefulness, as it provides a synchronous (non-isolated) way to access the `decisionHandler` property (which is
+/// useful as properties are not allowed to be non-isolated).
 class HLSInterstitialEventDecisioner: EventDecisioner {
     weak var decisionHandler: HLSInterstitialEventLoadingRequestDecisionHandler?
 
@@ -35,6 +38,10 @@ class HLSInterstitialEventDecisioner: EventDecisioner {
         playlist: HLSPlaylist
     ) async -> EventsResponse {
         await decisioningActor.events(forParameters: parameters, playlist: playlist)
+    }
+
+    func event(forId id: String) async -> HLSInterstitialEvent? {
+        await decisioningActor.event(forId: id)
     }
 }
 

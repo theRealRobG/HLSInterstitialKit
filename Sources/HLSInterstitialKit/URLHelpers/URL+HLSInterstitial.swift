@@ -1,6 +1,26 @@
 import Foundation
 
 extension URL {
+    /// Base URL for X-ASSET-LIST
+    static let assetListBaseURL = URL(string: "https://asset-list/assets.json")!.toInterstitialURL()
+
+    /// Helper to determne whether this `URL` is an X-ASSET-LIST URL
+    var isAssetListURL: Bool {
+        if #available(iOS 16, tvOS 16, *) {
+            return isInterstitialURL() && host() == "asset-list" && path() == "/assets.json"
+        } else {
+            return isInterstitialURL() && host == "asset-list" && path == "/assets.json"
+        }
+    }
+
+    /// The value of the `_HLS_interstitial_id` query parameter (if it exists)
+    var hlsInterstitialId: String? {
+        URLComponents(url: self, resolvingAgainstBaseURL: true)?
+            .queryItems?
+            .first(where: { $0.name == "_HLS_interstitial_id" })?
+            .value
+    }
+
     /// Helper method to determine whether this `URL` is a `HLSInterstitialScheme` type of `URL`.
     func isInterstitialURL() -> Bool {
         guard let scheme = scheme else { return false }

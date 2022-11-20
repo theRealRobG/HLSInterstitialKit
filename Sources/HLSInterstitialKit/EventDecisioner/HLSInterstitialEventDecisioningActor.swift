@@ -7,7 +7,11 @@ actor HLSInterstitialEventDecisioningActor: EventDecisioner {
     /// IDs that did not have adverts provided for.
     private var emptyIDs = [String]()
     /// All events mapped to their corresponding IDs.
-    private var idToEventMap = [String: HLSInterstitialEvent]()
+    private var idToEventMap = [String: HLSInterstitialEvent]() {
+        didSet { eventIdToIdMap = idToEventMap.reduce(into: [:]) { $0[$1.value.id] = $1.key } }
+    }
+    /// `HLSInterstitialEvent` id mapping to `EXT-X-DATERANGE:ID` to help with lookup via `X-ASSET-LIST`
+    private var eventIdToIdMap = [String: String]()
     /// All active requests
     private var activeRequests = [String: Task<Void, Never>]()
     /// The initial request is handled in a special fashion as the consumer can one-time provide pre-rolls and timed
@@ -22,11 +26,20 @@ actor HLSInterstitialEventDecisioningActor: EventDecisioner {
         forParameters parameters: [String: HLSInterstitialEventLoadingRequest.Parameters],
         playlist: HLSPlaylist
     ) async -> EventsResponse {
-        let isInitialRequest = !initialRequestStatus.hasStarted
-        if isInitialRequest {
-            initialRequestStatus = .inProgress
+        let isInitialRequest: Bool
+        let initialRequestCompleted: Bool
+        switch initialRequestStatus {
+        case .notStarted:
+            isInitialRequest = true
+            initialRequestCompleted = false
+        case .inProgress:
+            isInitialRequest = false
+            initialRequestCompleted = false
+        case .completed:
+            isInitialRequest = false
+            initialRequestCompleted = true
         }
-        if Set(emptyIDs).union(Set(idToEventMap.keys)).isSuperset(of: Set(parameters.keys)) && !isInitialRequest {
+        if Set(emptyIDs).union(Set(idToEventMap.keys)).isSuperset(of: Set(parameters.keys)) && initialRequestCompleted {
             return EventsResponse(idToEventMap: idToEventMap, initialRequestStatus: initialRequestStatus)
         }
         let decisionedIDs = Set(emptyIDs).union(Set(idToEventMap.keys))
@@ -37,17 +50,21 @@ actor HLSInterstitialEventDecisioningActor: EventDecisioner {
             if let activeRequest = activeRequests[id] {
                 tasksToAwait.append(activeRequest)
                 return nil
+            } else if let initialRequest = initialRequestStatus.inProgressTask {
+                tasksToAwait.append(initialRequest)
+                return nil
             } else {
                 return $0
             }
         }
-        tasksToAwait.append(
-            Task {
+        if !paramsNeedingDecision.isEmpty || isInitialRequest {
+            let task = Task {
                 let eventHandler = HLSInterstitialEventRequestHandler(
                     decisionHandler: decisionHandler,
                     isInitialRequest: isInitialRequest
                 )
                 let events = await eventHandler.events(forParameters: paramsNeedingDecision, playlist: playlist)
+                paramsNeedingDecision.forEach { activeRequests.removeValue(forKey: $0.id) }
                 for (params, event) in events.parameterizedEvents {
                     if let event = event {
                         idToEventMap[params.id] = event
@@ -64,11 +81,28 @@ actor HLSInterstitialEventDecisioningActor: EventDecisioner {
                     )
                 }
             }
-        )
+            if isInitialRequest {
+                initialRequestStatus = .inProgress(task)
+            }
+            paramsNeedingDecision.forEach { activeRequests[$0.id] = task }
+            tasksToAwait.append(task)
+        }
         for task in tasksToAwait {
             await task.value
         }
         return EventsResponse(idToEventMap: idToEventMap, initialRequestStatus: initialRequestStatus)
+    }
+
+    func event(forId eventId: String) async -> HLSInterstitialEvent? {
+        if let id = eventIdToIdMap[eventId], let event = idToEventMap[id] {
+            return event
+        }
+        let initialInterstitials = initialRequestStatus.initialInterstitials
+        if let event = initialInterstitials.preRollInterstitials.first(where: { $0.id == eventId }) {
+            return event
+        } else {
+            return initialInterstitials.initialInterstitials.first(where: { $0.event.id == eventId })?.event
+        }
     }
 }
 
@@ -80,13 +114,13 @@ extension HLSInterstitialEventDecisioningActor {
 
     enum InitialRequestStatus {
         case notStarted
-        case inProgress
+        case inProgress(Task<Void, Never>)
         case completed(InitialInterstials)
 
-        var hasStarted: Bool {
+        var inProgressTask: Task<Void, Never>? {
             switch self {
-            case .notStarted: return false
-            case .inProgress, .completed: return true
+            case .inProgress(let task): return task
+            case .completed, .notStarted: return nil
             }
         }
 

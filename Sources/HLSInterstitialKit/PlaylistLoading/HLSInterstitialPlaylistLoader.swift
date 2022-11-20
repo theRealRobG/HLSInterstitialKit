@@ -10,15 +10,39 @@ class HLSInterstitialPlaylistLoader {
     private let dataFetcher: HLSInterstitialDataFetcher
     private let hlsParser: HLSParser
     private let mediaPlaylistManipulator: MediaPlaylistManipulator
+    private let jsonEncoder: JSONEncoder
 
     init(
         dataFetcher: HLSInterstitialDataFetcher = HLSInterstitialDataFetcher(),
         hlsParser: HLSParser = HLSParser(),
-        mediaPlaylistManipulator: MediaPlaylistManipulator = MediaPlaylistManipulator()
+        mediaPlaylistManipulator: MediaPlaylistManipulator = MediaPlaylistManipulator(),
+        jsonEncoder: JSONEncoder = JSONEncoder()
     ) {
         self.dataFetcher = dataFetcher
         self.hlsParser = hlsParser
         self.mediaPlaylistManipulator = mediaPlaylistManipulator
+        self.jsonEncoder = jsonEncoder
+    }
+
+    func loadAssetListResponse(url: URL, completion: @escaping (Result<Data, Error>) -> Void) {
+        guard let id = url.hlsInterstitialId else {
+            do {
+                let emptyResponse = AssetListResponse(assets: [])
+                completion(.success(try jsonEncoder.encode(emptyResponse)))
+            } catch {
+                completion(.failure(error))
+            }
+            return
+        }
+        Task { [weak self] in
+            guard let self = self else { throw CancellationError() }
+            let response = await self.mediaPlaylistManipulator.assetList(forId: id)
+            do {
+                completion(.success(try self.jsonEncoder.encode(response)))
+            } catch {
+                completion(.failure(error))
+            }
+        }
     }
 
     func loadPlaylist(

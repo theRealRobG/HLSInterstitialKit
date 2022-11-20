@@ -21,6 +21,11 @@ class MediaPlaylistManipulator {
 
         return try playlist.write()
     }
+
+    func assetList(forId id: String) async -> AssetListResponse {
+        let event = await eventDecisioner.event(forId: id)
+        return event.map { AssetListResponse(assets: $0.assets) } ?? AssetListResponse(assets: [])
+    }
     
     private func addInterstitialsForVOD(playlist: inout HLSPlaylist, interstitials: [HLSInterstitialInitialEvent]) {
         // Only insert initial interstitial for VOD playlist type
