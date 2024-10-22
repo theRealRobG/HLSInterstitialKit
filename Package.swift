@@ -17,7 +17,7 @@ let package = Package(
         // Dependencies declare other packages that this package depends on.
         .package(
             url: "https://github.com/comcast/mamba.git",
-            .exact(Version(1, 5, 1))
+            .upToNextMinor(from: Version(1, 6, 0))
         ),
         .package(
             url: "https://github.com/theRealRobG/SCTE35Parser.git",
