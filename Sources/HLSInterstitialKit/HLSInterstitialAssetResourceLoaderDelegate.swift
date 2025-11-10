@@ -34,6 +34,7 @@ class HLSInterstitialAssetResourceLoaderDelegate: NSObject, AVAssetResourceLoade
                 playlistLoader.loadAssetListResponse(url: url) { result in
                     switch result {
                     case .success(let assetListData):
+                        print("ROBLOG - asset list response received - \(String(data: assetListData, encoding: .utf8)!)")
                         loadingRequest.dataRequest?.respond(with: assetListData)
                         loadingRequest.finishLoading()
                     case .failure(let error):

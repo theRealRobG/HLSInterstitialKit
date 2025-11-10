@@ -24,7 +24,9 @@ class MediaPlaylistManipulator {
 
     func assetList(forId id: String) async -> AssetListResponse {
         let event = await eventDecisioner.event(forId: id)
-        return event.map { AssetListResponse(assets: $0.assets) } ?? AssetListResponse(assets: [])
+        return event.map {
+            AssetListResponse(assets: $0.assets, tracking: Tracking())
+        } ?? AssetListResponse(assets: [], tracking: Tracking())
     }
     
     private func addInterstitialsForVOD(playlist: inout HLSPlaylist, interstitials: [HLSInterstitialInitialEvent]) {

@@ -27,7 +27,7 @@ class HLSInterstitialPlaylistLoader {
     func loadAssetListResponse(url: URL, completion: @escaping (Result<Data, Error>) -> Void) {
         guard let id = url.hlsInterstitialId else {
             do {
-                let emptyResponse = AssetListResponse(assets: [])
+                let emptyResponse = AssetListResponse(assets: [], tracking: Tracking())
                 completion(.success(try jsonEncoder.encode(emptyResponse)))
             } catch {
                 completion(.failure(error))

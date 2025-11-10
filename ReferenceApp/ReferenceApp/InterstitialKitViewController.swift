@@ -25,7 +25,8 @@ class InterstitialKitViewController: UIViewController {
 
     private let advertService = AdvertService()
     private let playerFactory = PlayerFactory()
-    
+    private var interstitialMonitor: AVPlayerInterstitialEventMonitor?
+
     @IBAction func onPlay(_ sender: Any) {
         play(url: playerFactory.vodURL)
     }
@@ -56,7 +57,101 @@ class InterstitialKitViewController: UIViewController {
         let playerController = playerFactory.make(asset: asset, playerType: .avKit)
         #endif
         playerController.player?.currentItem.map { observe(playerItem: $0) }
+        if let player = playerController.player {
+            setUpInterstitialMonitor(forPlayer: player)
+        }
         present(playerController, animated: true) { playerController.player?.play() }
+    }
+
+    private func setUpInterstitialMonitor(forPlayer player: AVPlayer) {
+        print("ROBLOG - setting up interstitial monitor")
+        let interstitialMonitor = AVPlayerInterstitialEventMonitor(primaryPlayer: player)
+        self.interstitialMonitor = interstitialMonitor
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(interstitialEventsDidChange(_:)),
+            name: AVPlayerInterstitialEventMonitor.eventsDidChangeNotification,
+            object: nil
+        )
+        if #available(iOS 16.4, tvOS 16.4, *) {
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(assetListResponseStatusDidChangeNotification(_:)),
+                name: AVPlayerInterstitialEventMonitor.assetListResponseStatusDidChangeNotification,
+                object: nil
+            )
+        }
+    }
+
+    @objc
+    private func interstitialEventsDidChange(_ notification: Notification) {
+        guard let interstitialMonitor else { return }
+        let ids = interstitialMonitor.events.map { $0.identifier }
+        if #available(iOS 16.4, tvOS 16.4, *) {
+            let assetListResponses = interstitialMonitor
+                .events
+                .map { event in
+                    if let assetListResponse = event.assetListResponse {
+                        return "\(assetListResponse)"
+                    } else {
+                        return "NO RESPONSE"
+                    }
+                }
+            print("ROBLOG - interstitial events did change - \(ids) - \(assetListResponses)")
+        } else {
+            print("ROBLOG - interstitial events did change - \(ids)")
+        }
+    }
+
+    @objc @available(iOS 16.4, tvOS 16.4, *)
+    private func assetListResponseStatusDidChangeNotification(_ notification: Notification) {
+        let status = notification.userInfo?[
+            AVPlayerInterstitialEventMonitor.assetListResponseStatusDidChangeStatusKey
+        ] as? AVPlayerInterstitialEventAssetListResponseStatus ?? .unavailable
+        guard let event = notification.userInfo?[
+            AVPlayerInterstitialEventMonitor.assetListResponseStatusDidChangeEventKey
+        ] as? AVPlayerInterstitialEvent else { fatalError("asset list changed with no associated event") }
+        let error = notification.userInfo?[
+            AVPlayerInterstitialEventMonitor.assetListResponseStatusDidChangeErrorKey
+        ] as? Error
+        switch status {
+        case .available:
+            if let error {
+                print("ROBLOG - asset list available for ID=\"\(event.identifier)\" with error \(error)")
+            } else {
+                print("ROBLOG - asset list available for ID=\"\(event.identifier)\"")
+            }
+            if let assetList = event.assetListResponse {
+                print("ROBLOG - asset list: \(assetList)")
+            }
+        case .cleared:
+            if let error {
+                print("ROBLOG - asset list was cleared for ID=\"\(event.identifier)\" due to \(error)")
+            } else {
+                print("ROBLOG - asset list was cleared for ID=\"\(event.identifier)\"")
+            }
+        case .unavailable:
+            if let error {
+                print("ROBLOG - asset list is unavailable for ID=\"\(event.identifier)\" due to \(error)")
+            } else {
+                print("ROBLOG - asset list is unavailable for ID=\"\(event.identifier)\",TIME=\(event.time.seconds)")
+            }
+        @unknown default:
+            if let error {
+                print("ROBLOG - unknown asset list status \(status) for ID=\"\(event.identifier)\" with error \(error)")
+            } else {
+                print("ROBLOG - unknown asset list status \(status) for ID=\"\(event.identifier)\"")
+            }
+        }
+        guard let interstitialMonitor else { return }
+        let keys = interstitialMonitor.events.map { event in
+            if let assetListResponse = event.assetListResponse {
+                return "\(assetListResponse)"
+            } else {
+                return "NO RESPONSE"
+            }
+        }
+        print("ROBLOG - events - \(keys)")
     }
 }
 

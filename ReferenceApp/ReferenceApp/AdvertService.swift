@@ -10,30 +10,8 @@ import AVFoundation
 import HLSInterstitialKit
 
 class AdvertService {
-    private let assets = [
-        HLSInterstitialEvent.Asset(
-            url: URL(string: "https://akam.daps.nbcuni.com/m/1/169843/19/11616659/015K831ANW12021H_ENT_MEZZ_HULU_3318934_730/master_cmaf.m3u8")!,
-            duration: 15
-        ),
-        HLSInterstitialEvent.Asset(
-            url: URL(string: "https://akam.daps.nbcuni.com/m/1/169843/71/11616583/015K601GON12021H_ENT_MEZZ_HULU_3318920_730/master_cmaf.m3u8")!,
-            duration: 15
-        )
-    ]
-    private let preRollAssets = [
-        HLSInterstitialEvent.Asset(
-            url: URL(string: "https://akam.daps.nbcuni.com/m/1/169843/104/11614952/030G831NBC11021H_ENT_MEZZ_HULU_3318615_730/master_cmaf.m3u8")!,
-            duration: 30
-        ),
-        HLSInterstitialEvent.Asset(
-            url: URL(string: "https://akam.daps.nbcuni.com/m/1/169843/19/11616659/015K831ANW12021H_ENT_MEZZ_HULU_3318934_730/master_cmaf.m3u8")!,
-            duration: 15
-        ),
-        HLSInterstitialEvent.Asset(
-            url: URL(string: "https://akam.daps.nbcuni.com/m/1/169843/71/11616583/015K601GON12021H_ENT_MEZZ_HULU_3318920_730/master_cmaf.m3u8")!,
-            duration: 15
-        )
-    ]
+    private let assets = [HLSInterstitialEvent.Asset]()
+    private let preRollAssets = [HLSInterstitialEvent.Asset]()
 
     func getInterstitialPreRoll() -> HLSInterstitialEvent {
         HLSInterstitialEvent(
@@ -97,18 +75,23 @@ class AdvertService {
     }
     
     private func getAdAssets(forDuration duration: TimeInterval) -> [HLSInterstitialEvent.Asset] {
-        var durationLeft = duration + 1 // Give a little space for over-filling by a small amount.
-        var adAssets = [HLSInterstitialEvent.Asset]()
-        var count = -1
-        while durationLeft > 0 {
-            count += 1
-            let asset = assets[count % 2]
-            durationLeft -= asset.duration
-            if durationLeft < 0 {
-                break
-            }
-            adAssets.append(asset)
-        }
-        return adAssets
+//        [HLSInterstitialEvent.Asset(
+//            url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/adv_dv_atmos/main.m3u8")!,
+//            duration: 98)
+//        ]
+        []
+//        var durationLeft = duration + 1 // Give a little space for over-filling by a small amount.
+//        var adAssets = [HLSInterstitialEvent.Asset]()
+//        var count = -1
+//        while durationLeft > 0 {
+//            count += 1
+//            let asset = assets[count % 2]
+//            durationLeft -= asset.duration
+//            if durationLeft < 0 {
+//                break
+//            }
+//            adAssets.append(asset)
+//        }
+//        return adAssets
     }
 }
